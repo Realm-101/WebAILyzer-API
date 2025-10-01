@@ -2,13 +2,17 @@
 
 A minimal, lightweight web technology detection API built with Go. Provides simple HTTP endpoints for analyzing websites and detecting technologies using the wappalyzer engine.
 
+> 🧹 **Clean & Simple**: This repository has been cleaned and optimized for minimal complexity and maximum usability.
+
 ## Features
 
 - **Technology Detection**: Identify web technologies, frameworks, and libraries used by websites
 - **Simple HTTP API**: Two endpoints - health check and website analysis
 - **Docker Support**: Easy deployment with Docker and Docker Compose
-- **Lightweight**: Minimal dependencies and resource usage
+- **Lightweight**: Minimal dependencies and resource usage (runs in <256MB RAM)
 - **Fast Response**: Quick analysis with appropriate timeouts
+- **Zero Configuration**: No setup required - just build and run
+- **Production Ready**: Includes health checks, logging, and error handling
 
 ## Quick Start
 
@@ -184,15 +188,41 @@ The API includes a health check endpoint at `/health` that returns:
 
 This endpoint is used by Docker health checks and load balancers to verify the service is running.
 
+## Project Structure
+
+The project follows a clean, minimal structure focused on simplicity and maintainability:
+
+```
+├── cmd/webailyzer-api/     # Main application
+├── test/                   # Integration tests
+├── examples/               # Usage examples
+├── deploy.sh/deploy.bat    # Deployment scripts
+├── DEPLOYMENT.md           # Deployment guide
+├── API_DOCUMENTATION.md    # API reference
+└── QUICK_START.md          # Quick start guide
+```
+
+📋 **See [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) for detailed project organization**
+
+## Documentation
+
+- **[QUICK_START.md](QUICK_START.md)** - One-command deployment
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Comprehensive deployment guide  
+- **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)** - Complete API reference
+- **[PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)** - Project organization
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history
+
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
 4. Add tests for new functionality
-5. Run the test suite
-6. Submit a pull request
+5. Run the test suite: `make test`
+6. Test Docker deployment: `./test-docker.sh`
+7. Submit a pull request
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

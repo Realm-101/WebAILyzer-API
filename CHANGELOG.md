@@ -5,29 +5,58 @@ All notable changes to the WebAIlyzer Lite API project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - 2024-01-15
+## [Unreleased]
+
+### Added
+- Comprehensive deployment documentation with troubleshooting guide
+- Automated deployment scripts for Windows and Linux/Mac
+- Quick start guide for one-command deployment
+- Project structure documentation
+
+### Changed
+- Repository cleanup: removed unused files and outdated components
+- Simplified project structure focused on core functionality
+- Updated documentation to reflect current implementation
+
+### Removed
+- Unused Go library files from previous wappalyzer implementation
+- Outdated configuration files and documentation
+- Complex internal packages not used by the simple API
+- Binary files and build artifacts from repository
+
+## [1.0.0] - 2024-12-01
 
 ### Added
 
 #### Core Features
-- **Website Analysis Engine**: Comprehensive analysis including performance, SEO, accessibility, security, and technology detection
-- **AI-Powered Insights**: Automated generation of optimization recommendations and actionable insights
-- **Batch Processing**: Support for analyzing multiple URLs simultaneously with progress tracking
-- **Real-time Metrics**: Aggregated metrics and KPI tracking with anomaly detection
-- **Data Export**: Export analysis results in PDF, CSV, and JSON formats
-- **Event Tracking**: User interaction and behavior tracking with session management
+- **Technology Detection**: Website technology fingerprinting using wappalyzer engine
+- **Simple HTTP API**: Two endpoints for health checks and website analysis
+- **Docker Support**: Complete containerization with health checks
+- **Memory Optimization**: Efficient resource usage and garbage collection tuning
+- **Error Handling**: Comprehensive error responses with structured logging
 
 #### API Endpoints
-- `POST /api/v1/analyze` - Single URL analysis
-- `POST /api/v1/batch` - Batch URL analysis
-- `GET /api/v1/analysis` - Analysis history retrieval
-- `POST /api/v1/insights/generate` - AI insights generation
-- `GET /api/v1/insights` - Insights retrieval with filtering
-- `PUT /api/v1/insights/{id}/status` - Insight status updates
-- `GET /api/v1/metrics` - Aggregated metrics with time-based filtering
-- `POST /api/v1/events/track` - Event tracking
-- `GET /api/v1/events` - Event history retrieval
-- `POST /api/v1/export` - Data export initiation
+- `GET /health` - Health check endpoint with memory statistics
+- `POST /v1/analyze` - Website technology analysis endpoint
+
+#### Infrastructure
+- **Docker Deployment**: Multi-stage Dockerfile with security optimizations
+- **Docker Compose**: Simple development and production configurations
+- **Health Checks**: Built-in health monitoring for container orchestration
+- **Logging**: Structured JSON logging with request tracking
+- **Security**: Non-root container execution and read-only filesystem
+
+#### Testing
+- **Integration Tests**: Comprehensive API testing suite
+- **Docker Tests**: Container deployment verification
+- **Memory Tests**: Resource usage validation
+- **Edge Case Tests**: Error handling and boundary condition testing
+
+#### Documentation
+- **API Documentation**: Complete endpoint reference with examples
+- **Deployment Guide**: Step-by-step deployment instructions
+- **Contributing Guide**: Development workflow and guidelines
+- **Examples**: Usage examples and integration patterns
 - `GET /api/v1/export/{id}` - Export file download
 - `GET /health` - Health check endpoint
 - `GET /metrics` - Prometheus metrics endpoint

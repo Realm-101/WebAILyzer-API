@@ -1,289 +1,132 @@
 # WebAIlyzer Lite API - Project Structure
 
-This document describes the project structure and organization of the WebAIlyzer Lite API.
+This document describes the clean, minimal project structure of the WebAIlyzer Lite API.
 
 ## Directory Structure
 
 ```
 .
-├── cmd/                          # Application entry points
-│   └── webailyzer-api/          # Main API server
-│       └── main.go              # Application bootstrap
-├── internal/                     # Private application code
-│   ├── cache/                   # Caching layer (Redis)
-│   │   ├── redis.go             # Redis client implementation
-│   │   └── service.go           # Cache service interface
-│   ├── config/                  # Configuration management
-│   │   └── config.go            # Configuration structures and loading
-│   ├── database/                # Database management
-│   │   ├── connection.go        # Database connection handling
-│   │   ├── migrations.go        # Migration management
-│   │   ├── maintenance.go       # Database maintenance tasks
-│   │   ├── performance.go       # Performance optimization
-│   │   └── migrations/          # SQL migration files
-│   ├── errors/                  # Error handling
-│   │   └── errors.go            # Custom error types and handling
-│   ├── handlers/                # HTTP request handlers
-│   │   ├── analysis.go          # Analysis endpoints
-│   │   ├── event.go             # Event tracking endpoints
-│   │   ├── export.go            # Data export endpoints
-│   │   ├── health.go            # Health check endpoints
-│   │   ├── insights.go          # Insights endpoints
-│   │   └── metrics.go           # Metrics endpoints
-│   ├── logging/                 # Logging infrastructure
-│   │   └── logger.go            # Structured logging setup
-│   ├── middleware/              # HTTP middleware
-│   │   ├── auth.go              # Authentication middleware
-│   │   ├── error.go             # Error handling middleware
-│   │   ├── metrics.go           # Metrics collection middleware
-│   │   └── ratelimit.go         # Rate limiting middleware
-│   ├── models/                  # Data models and structures
-│   │   ├── analysis.go          # Analysis-related models
-│   │   ├── insight.go           # Insight models
-│   │   ├── metrics.go           # Metrics models
-│   │   ├── session.go           # Session models
-│   │   └── workspace.go         # Workspace models
-│   ├── monitoring/              # Monitoring and observability
-│   │   ├── metrics.go           # Prometheus metrics
-│   │   └── service.go           # Monitoring service
-│   ├── repositories/            # Data access layer
-│   │   ├── interfaces.go        # Repository interfaces
-│   │   └── postgres/            # PostgreSQL implementations
-│   │       ├── analysis.go      # Analysis repository
-│   │       ├── event.go         # Event repository
-│   │       ├── insight.go       # Insight repository
-│   │       ├── metrics.go       # Metrics repository
-│   │       ├── session.go       # Session repository
-│   │       └── workspace.go     # Workspace repository
-│   └── services/                # Business logic layer
-│       ├── analysis.go          # Analysis service implementation
-│       ├── event.go             # Event tracking service
-│       ├── export.go            # Export service
-│       ├── insights.go          # Insights generation service
-│       ├── insights_job.go      # Background insights processing
-│       ├── interfaces.go        # Service interfaces
-│       ├── metrics.go           # Metrics aggregation service
-│       └── analyzers/           # Analysis engines
-│           ├── accessibility.go # Accessibility analyzer
-│           ├── performance.go   # Performance analyzer
-│           ├── security.go      # Security analyzer
-│           ├── seo.go           # SEO analyzer
-│           └── technology.go    # Technology detection
-├── test/                        # Test files
-│   ├── benchmarks/              # Performance benchmarks
-│   │   └── performance_test.go  # API performance tests
-│   ├── integration/             # Integration tests
-│   │   ├── e2e_test.go          # End-to-end tests
-│   │   └── error_scenarios_test.go # Error handling tests
-│   └── run_integration_tests.sh # Test runner script
-├── monitoring/                  # Monitoring configuration
-│   ├── grafana-dashboard.json   # Grafana dashboard
-│   ├── prometheus.yml           # Prometheus configuration
-│   └── webailyzer_rules.yml     # Alerting rules
-├── API_DOCUMENTATION.md         # Complete API documentation
-├── TROUBLESHOOTING.md           # Troubleshooting guide
-├── docker-compose.yml           # Development environment
-├── docker-compose.test.yml      # Test environment
-├── Dockerfile                   # Container build instructions
-├── Makefile                     # Build and development tasks
+├── .github/                     # GitHub workflows and templates
+├── .kiro/                       # Kiro IDE configuration and specs
+├── cmd/                         # Application entry points
+│   └── webailyzer-api/         # Main API server
+│       ├── main.go             # Application bootstrap and HTTP server
+│       ├── main_test.go        # Main application tests
+│       ├── memory_test.go      # Memory optimization tests
+│       ├── resource_optimization_test.go  # Resource usage tests
+│       └── timeout_test.go     # Timeout handling tests
+├── examples/                    # Usage examples
+│   ├── integration_examples.md # Integration examples documentation
+│   └── main.go                 # Simple wappalyzer usage example
+├── test/                        # Test suite
+│   ├── integration/            # Integration tests
+│   │   ├── docker_test.go      # Docker deployment tests
+│   │   ├── edge_cases_test.go  # Edge case handling tests
+│   │   ├── real_server_test.go # Real server integration tests
+│   │   ├── webailyzer_lite_test.go # Core API tests
+│   │   └── README.md           # Integration test documentation
+│   ├── run_integration_tests.bat # Windows test runner
+│   └── run_integration_tests.sh  # Linux/Mac test runner
+├── .gitignore                   # Git ignore patterns
+├── API_DOCUMENTATION.md         # Complete API reference
+├── CHANGELOG.md                 # Version history and changes
+├── CONTRIBUTING.md              # Contribution guidelines
+├── deploy.bat                   # Windows deployment script
+├── deploy.sh                    # Linux/Mac deployment script
+├── DEPLOYMENT.md                # Comprehensive deployment guide
+├── docker-compose.test.yml      # Docker Compose for testing
+├── docker-compose.yml           # Docker Compose for development
+├── Dockerfile                   # Docker image definition
 ├── go.mod                       # Go module definition
-└── README.md                    # Project overview and setup
+├── go.sum                       # Go module checksums
+├── LICENSE                      # MIT license
+├── Makefile                     # Build automation
+├── QUICK_START.md               # Quick deployment guide
+├── README.md                    # Project overview and usage
+├── test-docker.bat              # Windows Docker test script
+└── test-docker.sh               # Linux/Mac Docker test script
 ```
 
-## Architecture Layers
+## Key Components
 
-### 1. Handlers Layer (`internal/handlers/`)
-- HTTP request/response handling
-- Request validation and parsing
-- Response formatting
-- Route registration
+### Core Application (`cmd/webailyzer-api/`)
+- **main.go**: Complete HTTP server implementation with:
+  - Health check endpoint (`/health`)
+  - Website analysis endpoint (`/v1/analyze`)
+  - Error handling and logging
+  - Memory optimization
+  - Request timeouts and resource management
 
-### 2. Services Layer (`internal/services/`)
-- Business logic implementation
-- Orchestration of multiple repositories
-- Data transformation and validation
-- External service integration
+### Testing (`test/`)
+- **Integration tests**: End-to-end API testing
+- **Docker tests**: Container deployment verification
+- **Edge case tests**: Error handling and boundary conditions
+- **Performance tests**: Memory and resource usage validation
 
-### 3. Repository Layer (`internal/repositories/`)
-- Data access abstraction
-- Database operations (CRUD)
-- Query optimization
-- Transaction management
+### Documentation
+- **README.md**: Project overview and quick start
+- **DEPLOYMENT.md**: Comprehensive deployment guide
+- **API_DOCUMENTATION.md**: Complete API reference
+- **QUICK_START.md**: One-command deployment guide
 
-### 4. Models Layer (`internal/models/`)
-- Data structures and types
-- Validation rules
-- JSON serialization tags
-- Database mapping
+### Deployment
+- **Dockerfile**: Multi-stage build with security optimizations
+- **docker-compose.yml**: Simple development deployment
+- **deploy.sh/deploy.bat**: Automated deployment scripts
+- **Makefile**: Build automation and common tasks
 
-### 5. Infrastructure Layer
-- **Config** (`internal/config/`): Configuration management
-- **Database** (`internal/database/`): Database connection handling
-- **Cache** (`internal/cache/`): Caching layer implementation
+## Architecture Principles
 
-## Configuration
+### Simplicity
+- Single binary with no external dependencies
+- Minimal configuration required
+- No database or persistent storage needed
 
-The application uses a hierarchical configuration system:
+### Performance
+- Optimized HTTP client with connection pooling
+- Memory-efficient request processing
+- Garbage collection tuning for low resource usage
 
-1. **Default values** (set in code)
-2. **Configuration file** (`config.yaml`)
-3. **Environment variables** (prefixed with `WEBAILYZER_`)
+### Security
+- Read-only container filesystem
+- Non-root user execution
+- Request size limits and timeouts
+- Input validation and sanitization
 
-Environment variables take precedence over config file values.
+### Reliability
+- Comprehensive error handling
+- Health check endpoints
+- Graceful shutdown handling
+- Resource cleanup and memory management
 
 ## Development Workflow
 
-### Prerequisites
-- Go 1.24+
-- PostgreSQL 15+
-- Redis 7+
-- Docker & Docker Compose (optional)
+1. **Local Development**: Use `go run ./cmd/webailyzer-api` or `make run`
+2. **Testing**: Run `make test` or use the integration test scripts
+3. **Building**: Use `make build` or `go build ./cmd/webailyzer-api`
+4. **Docker Testing**: Use `./test-docker.sh` or `test-docker.bat`
+5. **Deployment**: Use `./deploy.sh` or `deploy.bat` for automated deployment
 
-### Local Development
-```bash
-# Install dependencies
-make deps
+## Dependencies
 
-# Format and lint code
-make fmt lint
+### Runtime Dependencies
+- **Go 1.24+**: Core runtime
+- **github.com/projectdiscovery/wappalyzergo**: Technology detection
+- **github.com/gorilla/mux**: HTTP routing
+- **github.com/gorilla/handlers**: CORS and middleware
+- **github.com/sirupsen/logrus**: Structured logging
 
-# Run tests
-make test
+### Development Dependencies
+- **Docker**: For containerized deployment
+- **Make**: For build automation (optional)
+- **curl**: For API testing
 
-# Start local development server
-make run
-```
+## File Naming Conventions
 
-### Docker Development
-```bash
-# Start all services (PostgreSQL, Redis, API)
-docker-compose up -d
+- **Go files**: `snake_case.go`
+- **Test files**: `*_test.go`
+- **Documentation**: `UPPERCASE.md`
+- **Scripts**: `kebab-case.sh` or `kebab-case.bat`
+- **Configuration**: `kebab-case.yml` or `kebab-case.yaml`
 
-# View logs
-docker-compose logs -f api
-
-# Stop services
-docker-compose down
-```
-
-## Database Migrations
-
-Database schema changes are managed through migration files in the `migrations/` directory.
-
-```bash
-# Create a new migration
-make migrate-create
-
-# Apply migrations
-make migrate-up
-
-# Rollback migrations
-make migrate-down
-```
-
-## Testing Strategy
-
-- **Unit Tests**: Test individual functions and methods
-- **Integration Tests**: Test database operations and external services
-- **API Tests**: Test HTTP endpoints end-to-end
-
-```bash
-# Run all tests
-make test
-
-# Run tests with coverage
-make test-coverage
-```
-
-## Deployment
-
-### Docker Deployment
-```bash
-# Build container
-make docker-build
-
-# Run container
-make docker-run
-```
-
-### Configuration for Production
-Set the following environment variables:
-
-- `WEBAILYZER_DATABASE_HOST`
-- `WEBAILYZER_DATABASE_PASSWORD`
-- `WEBAILYZER_REDIS_HOST`
-- `WEBAILYZER_AUTH_JWT_SECRET`
-- `WEBAILYZER_LOGGING_LEVEL`
-
-## Implementation Status
-
-The WebAIlyzer Lite API is fully implemented with the following features:
-
-### ✅ Completed Features
-
-1. **Core Analysis Engine**
-   - Technology detection using Wappalyzer fingerprints
-   - Performance metrics collection (Core Web Vitals)
-   - SEO analysis (meta tags, headings, links)
-   - Accessibility checks (WCAG compliance)
-   - Security assessment (SSL, headers, vulnerabilities)
-
-2. **AI-Powered Insights**
-   - Automated insight generation from analysis data
-   - Performance optimization recommendations
-   - SEO improvement suggestions
-   - Accessibility enhancement tips
-   - Security vulnerability alerts
-
-3. **Data Management**
-   - PostgreSQL database with optimized schema
-   - Redis caching for improved performance
-   - Database migrations and maintenance
-   - Data export in multiple formats (PDF, CSV, JSON)
-
-4. **API Features**
-   - RESTful API with comprehensive endpoints
-   - Authentication and workspace management
-   - Rate limiting and request validation
-   - Batch processing capabilities
-   - Event tracking and analytics
-
-5. **Monitoring & Observability**
-   - Prometheus metrics collection
-   - Structured logging with configurable levels
-   - Health checks and system monitoring
-   - Performance profiling endpoints
-   - Grafana dashboard configuration
-
-6. **Testing & Quality**
-   - Comprehensive unit test suite
-   - Integration tests with database
-   - End-to-end API testing
-   - Performance benchmarks
-   - Error scenario testing
-
-7. **Deployment & Operations**
-   - Docker containerization
-   - Docker Compose for development
-   - Kubernetes deployment manifests
-   - Production-ready configuration
-   - Backup and recovery procedures
-
-### 🏗️ Architecture Highlights
-
-- **Clean Architecture**: Separation of concerns with clear layer boundaries
-- **Dependency Injection**: Testable and maintainable code structure
-- **Interface-Driven Design**: Easy to mock and test components
-- **Microservices Ready**: Stateless design for horizontal scaling
-- **Performance Optimized**: Caching, connection pooling, and efficient queries
-- **Security First**: Authentication, rate limiting, and input validation
-
-### 📊 Key Metrics
-
-- **Test Coverage**: Comprehensive test suite with unit and integration tests
-- **Performance**: Optimized for high throughput and low latency
-- **Scalability**: Horizontal scaling support with load balancing
-- **Reliability**: Error handling, circuit breakers, and graceful degradation
-- **Observability**: Metrics, logging, and tracing for production monitoring
-
-The project follows Go best practices and clean architecture principles, making it maintainable, testable, and production-ready.
+This structure prioritizes simplicity, maintainability, and ease of deployment while providing comprehensive testing and documentation.
