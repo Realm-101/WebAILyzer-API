@@ -43,18 +43,10 @@ type TechnologyMetadata struct {
 	AnalysisTime        time.Duration `json:"analysis_time_ms"`
 	TechnologiesFound   int           `json:"technologies_found"`
 	CategoriesFound     int           `json:"categories_found"`
-	WappalyzerMetrics   WappalyzerMetrics `json:"wappalyzer_metrics"`
 	Timestamp          time.Time     `json:"timestamp"`
 	UserAgent          string        `json:"user_agent"`
 	ContentType        string        `json:"content_type"`
 	StatusCode         int           `json:"status_code"`
-}
-
-// WappalyzerMetrics contains internal wappalyzer performance metrics
-type WappalyzerMetrics struct {
-	TotalRequests      int           `json:"total_requests"`
-	AverageDuration    time.Duration `json:"average_duration_ms"`
-	TechnologiesFound  int           `json:"technologies_found"`
 }
 
 // Analyze performs technology detection on the provided HTTP response and body
@@ -70,9 +62,6 @@ func (ta *TechnologyAnalyzer) Analyze(ctx context.Context, headers http.Header, 
 	// Convert http.Header to map[string][]string for wappalyzer
 	headerMap := ta.convertHeaders(headers)
 
-	// Reset wappalyzer metrics for this analysis
-	ta.wappalyzer.ResetMetrics()
-
 	// Perform technology detection
 	technologies := ta.wappalyzer.Fingerprint(headerMap, body)
 	
@@ -81,9 +70,6 @@ func (ta *TechnologyAnalyzer) Analyze(ctx context.Context, headers http.Header, 
 	
 	// Get category information
 	categories := ta.wappalyzer.FingerprintWithCats(headerMap, body)
-	
-	// Get wappalyzer performance metrics
-	wappMetrics := ta.wappalyzer.GetMetrics()
 
 	analysisTime := time.Since(startTime)
 
@@ -95,15 +81,10 @@ func (ta *TechnologyAnalyzer) Analyze(ctx context.Context, headers http.Header, 
 			AnalysisTime:      analysisTime,
 			TechnologiesFound: len(technologies),
 			CategoriesFound:   ta.countUniqueCategories(categories),
-			WappalyzerMetrics: WappalyzerMetrics{
-				TotalRequests:     int(wappMetrics.TotalRequests),
-				AverageDuration:   wappMetrics.AverageDuration,
-				TechnologiesFound: int(wappMetrics.TechnologiesFound),
-			},
-			Timestamp:   startTime,
-			UserAgent:   userAgent,
-			ContentType: headers.Get("Content-Type"),
-			StatusCode:  statusCode,
+			Timestamp:         startTime,
+			UserAgent:         userAgent,
+			ContentType:       headers.Get("Content-Type"),
+			StatusCode:        statusCode,
 		},
 	}
 

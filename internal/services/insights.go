@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/projectdiscovery/wappalyzergo/internal/models"
-	"github.com/projectdiscovery/wappalyzergo/internal/repositories"
+	"github.com/webailyzer/webailyzer-lite-api/internal/models"
+	"github.com/webailyzer/webailyzer-lite-api/internal/repositories"
 	"github.com/google/uuid"
 )
 

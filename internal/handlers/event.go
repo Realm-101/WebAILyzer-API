@@ -12,8 +12,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 
-	"github.com/projectdiscovery/wappalyzergo/internal/models"
-	"github.com/projectdiscovery/wappalyzergo/internal/services"
+	"github.com/webailyzer/webailyzer-lite-api/internal/models"
+	"github.com/webailyzer/webailyzer-lite-api/internal/services"
 )
 
 // EventHandler handles event-related HTTP requests

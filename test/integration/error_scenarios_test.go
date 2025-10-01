@@ -13,8 +13,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/projectdiscovery/wappalyzergo/internal/models"
-	"github.com/projectdiscovery/wappalyzergo/internal/services"
+	"github.com/webailyzer/webailyzer-lite-api/internal/models"
+	"github.com/webailyzer/webailyzer-lite-api/internal/services"
 )
 
 // TestErrorRecoveryScenarios tests various error conditions and recovery behavior

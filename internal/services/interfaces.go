@@ -2,7 +2,7 @@ package services
 
 import (
 	"context"
-	"github.com/projectdiscovery/wappalyzergo/internal/models"
+	"github.com/webailyzer/webailyzer-lite-api/internal/models"
 	"github.com/google/uuid"
 	"time"
 )

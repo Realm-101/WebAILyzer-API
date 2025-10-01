@@ -3,8 +3,8 @@ package rules
 import (
 	"context"
 	"fmt"
-	"github.com/projectdiscovery/wappalyzergo/internal/models"
-	"github.com/projectdiscovery/wappalyzergo/internal/services/insights"
+	"github.com/webailyzer/webailyzer-lite-api/internal/models"
+	"github.com/webailyzer/webailyzer-lite-api/internal/services/insights"
 	"github.com/google/uuid"
 )
 

@@ -14,8 +14,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/projectdiscovery/wappalyzergo/internal/config"
-	"github.com/projectdiscovery/wappalyzergo/internal/models"
+	"github.com/webailyzer/webailyzer-lite-api/internal/config"
+	"github.com/webailyzer/webailyzer-lite-api/internal/models"
 )
 
 func TestRateLimitMiddleware_RateLimit(t *testing.T) {

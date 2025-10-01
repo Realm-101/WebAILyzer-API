@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"sync"
-	"github.com/projectdiscovery/wappalyzergo/internal/models"
+	"github.com/webailyzer/webailyzer-lite-api/internal/models"
 )
 
 // RuleRegistry manages and executes insight rules

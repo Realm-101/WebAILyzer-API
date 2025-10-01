@@ -1,4 +1,4 @@
-module github.com/projectdiscovery/wappalyzergo
+module github.com/webailyzer/webailyzer-lite-api
 
 go 1.24.0
 
@@ -7,6 +7,7 @@ require (
 	github.com/gorilla/handlers v1.5.2
 	github.com/gorilla/mux v1.8.1
 	github.com/jackc/pgx/v5 v5.7.6
+	github.com/projectdiscovery/wappalyzergo v0.2.48
 	github.com/prometheus/client_golang v1.23.2
 	github.com/redis/go-redis/v9 v9.14.0
 	github.com/sirupsen/logrus v1.9.3

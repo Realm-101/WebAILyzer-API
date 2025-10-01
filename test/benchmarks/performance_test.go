@@ -15,13 +15,13 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 
-	"github.com/projectdiscovery/wappalyzergo/internal/config"
-	"github.com/projectdiscovery/wappalyzergo/internal/database"
-	"github.com/projectdiscovery/wappalyzergo/internal/handlers"
-	"github.com/projectdiscovery/wappalyzergo/internal/middleware"
-	"github.com/projectdiscovery/wappalyzergo/internal/models"
-	"github.com/projectdiscovery/wappalyzergo/internal/repositories/postgres"
-	"github.com/projectdiscovery/wappalyzergo/internal/services"
+	"github.com/webailyzer/webailyzer-lite-api/internal/config"
+	"github.com/webailyzer/webailyzer-lite-api/internal/database"
+	"github.com/webailyzer/webailyzer-lite-api/internal/handlers"
+	"github.com/webailyzer/webailyzer-lite-api/internal/middleware"
+	"github.com/webailyzer/webailyzer-lite-api/internal/models"
+	"github.com/webailyzer/webailyzer-lite-api/internal/repositories/postgres"
+	"github.com/webailyzer/webailyzer-lite-api/internal/services"
 )
 
 // BenchmarkAnalysisEndpoint benchmarks the analysis endpoint performance

@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 
-	"github.com/projectdiscovery/wappalyzergo/internal/config"
+	"github.com/webailyzer/webailyzer-lite-api/internal/config"
 )
 
 // RateLimitEntry represents a rate limit entry for a workspace

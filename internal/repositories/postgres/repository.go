@@ -1,7 +1,7 @@
 package postgres
 
 import (
-	"github.com/projectdiscovery/wappalyzergo/internal/repositories"
+	"github.com/webailyzer/webailyzer-lite-api/internal/repositories"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 

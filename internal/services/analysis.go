@@ -8,9 +8,9 @@ import (
 	"io"
 
 	"github.com/google/uuid"
-	"github.com/projectdiscovery/wappalyzergo/internal/models"
-	"github.com/projectdiscovery/wappalyzergo/internal/repositories"
-	"github.com/projectdiscovery/wappalyzergo/internal/services/analyzers"
+	"github.com/webailyzer/webailyzer-lite-api/internal/models"
+	"github.com/webailyzer/webailyzer-lite-api/internal/repositories"
+	"github.com/webailyzer/webailyzer-lite-api/internal/services/analyzers"
 	"github.com/sirupsen/logrus"
 )
 // AnalysisServiceImpl implements the AnalysisService interface

@@ -165,7 +165,7 @@ import (
     "context"
     "fmt"
     
-    "github.com/projectdiscovery/wappalyzergo/internal/models"
+    "github.com/webailyzer/webailyzer-lite-api/internal/models"
 )
 
 // Analyzer defines the interface for website analysis.

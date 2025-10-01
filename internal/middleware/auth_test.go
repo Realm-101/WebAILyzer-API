@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/projectdiscovery/wappalyzergo/internal/models"
+	"github.com/webailyzer/webailyzer-lite-api/internal/models"
 )
 
 // MockWorkspaceRepository is a mock implementation of WorkspaceRepository

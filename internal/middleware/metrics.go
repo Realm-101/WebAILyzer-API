@@ -8,7 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	
-	"github.com/projectdiscovery/wappalyzergo/internal/monitoring"
+	"github.com/webailyzer/webailyzer-lite-api/internal/monitoring"
 )
 
 // MetricsMiddleware collects HTTP request metrics

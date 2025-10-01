@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/projectdiscovery/wappalyzergo/internal/errors"
+	"github.com/webailyzer/webailyzer-lite-api/internal/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

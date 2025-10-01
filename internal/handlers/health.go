@@ -9,8 +9,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	
-	"github.com/projectdiscovery/wappalyzergo/internal/database"
-	"github.com/projectdiscovery/wappalyzergo/internal/cache"
+	"github.com/webailyzer/webailyzer-lite-api/internal/database"
+	"github.com/webailyzer/webailyzer-lite-api/internal/cache"
 )
 
 // HealthChecker interface for components that can be health checked

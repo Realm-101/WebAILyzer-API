@@ -2,609 +2,328 @@
 
 ## Overview
 
-The WebAIlyzer Lite API transforms the existing wappalyzer technology detection server into a comprehensive web analytics platform. The design extends the current Go-based HTTP server with persistent storage, enhanced analysis capabilities, AI-powered insights, and robust API endpoints that support the full WebAIlyzer Lite ecosystem.
+The WebAIlyzer Lite API is a minimal, stateless HTTP service that provides web technology detection using the wappalyzer engine. The design focuses on simplicity, reliability, and low operational costs by eliminating complex dependencies while maintaining the core functionality of website technology fingerprinting.
 
-The system maintains the lightweight, self-hosted nature of the original while adding enterprise-grade features for analytics, session tracking, and intelligent recommendations.
+The system is designed to be deployed as a single binary or Docker container with no external dependencies, making it suitable for cost-effective hosting on basic infrastructure.
 
 ## Architecture
 
 ### High-Level Architecture
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Client Apps   │    │  Web Dashboard  │    │  External APIs  │
-│                 │    │                 │    │                 │
-└─────────┬───────┘    └─────────┬───────┘    └─────────┬───────┘
-          │                      │                      │
-          └──────────────────────┼──────────────────────┘
-                                 │
-                    ┌─────────────────┐
-                    │   API Gateway   │
-                    │  (Rate Limiting │
-                    │ Authentication) │
-                    └─────────┬───────┘
-                              │
-                 ┌─────────────────────┐
-                 │   WebAIlyzer API    │
-                 │                     │
-                 │  ┌───────────────┐  │
-                 │  │   Enhanced    │  │
-                 │  │   Analysis    │  │
-                 │  │   Engine      │  │
-                 │  └───────────────┘  │
-                 │                     │
-                 │  ┌───────────────┐  │
-                 │  │  AI Insights  │  │
-                 │  │    Engine     │  │
-                 │  └───────────────┘  │
-                 └─────────┬───────────┘
-                           │
-              ┌─────────────────────┐
-              │   Data Layer        │
-              │                     │
-              │ ┌─────────────────┐ │
-              │ │   PostgreSQL    │ │
-              │ │   (Primary)     │ │
-              │ └─────────────────┘ │
-              │                     │
-              │ ┌─────────────────┐ │
-              │ │     Redis       │ │
-              │ │   (Caching)     │ │
-              │ └─────────────────┘ │
-              └─────────────────────┘
+┌─────────────────┐
+│   Client Apps   │
+│                 │
+└─────────┬───────┘
+          │
+          │ HTTP Requests
+          │
+┌─────────▼───────┐
+│ WebAIlyzer Lite │
+│      API        │
+│                 │
+│ ┌─────────────┐ │
+│ │HTTP Handlers│ │
+│ └─────────────┘ │
+│                 │
+│ ┌─────────────┐ │
+│ │ Wappalyzer  │ │
+│ │   Engine    │ │
+│ └─────────────┘ │
+│                 │
+│ ┌─────────────┐ │
+│ │HTTP Client  │ │
+│ └─────────────┘ │
+└─────────────────┘
 ```
 
 ### Component Architecture
 
-The system follows a layered architecture pattern:
+The system follows a simple, stateless architecture:
 
-1. **API Layer**: HTTP handlers with middleware for authentication, rate limiting, and request validation
-2. **Service Layer**: Business logic for analysis, insights generation, and data processing
-3. **Repository Layer**: Data access abstraction for database operations
-4. **External Integration Layer**: Interfaces for third-party services and webhooks
+1. **HTTP Server**: Gorilla Mux router handling incoming requests
+2. **Request Handlers**: Simple handlers for /v1/analyze and /health endpoints
+3. **Wappalyzer Integration**: Direct integration with wappalyzer engine for technology detection
+4. **HTTP Client**: Safe HTTP client for fetching external URLs with timeouts
 
 ## Components and Interfaces
 
 ### API Endpoints
 
-#### Enhanced Analysis Endpoint
+#### Analysis Endpoint
 ```go
-POST /api/v1/analyze
+POST /v1/analyze
 Content-Type: application/json
 
+{
+  "url": "https://example.com"
+}
+
+Response:
 {
   "url": "https://example.com",
-  "session_id": "optional-session-uuid",
-  "workspace_id": "workspace-uuid",
-  "options": {
-    "include_performance": true,
-    "include_seo": true,
-    "include_accessibility": true,
-    "include_security": true,
-    "user_agent": "custom-agent"
-  }
-}
-
-Response:
-{
-  "analysis_id": "uuid",
-  "url": "https://example.com",
-  "timestamp": "2024-01-01T00:00:00Z",
-  "session_id": "session-uuid",
-  "technologies": {...},
-  "performance": {
-    "load_time_ms": 1250,
-    "first_contentful_paint": 800,
-    "largest_contentful_paint": 1100,
-    "resource_count": 45,
-    "total_size_kb": 2048
-  },
-  "seo": {
-    "title": "Page Title",
-    "meta_description": "Description",
-    "h1_count": 1,
-    "structured_data": [...],
-    "score": 85
-  },
-  "accessibility": {
-    "score": 78,
-    "issues": [...],
-    "wcag_level": "AA"
-  },
-  "security": {
-    "https": true,
-    "headers": {...},
-    "score": 92
-  }
-}
-```
-
-#### Batch Analysis Endpoint
-```go
-POST /api/v1/batch
-Content-Type: application/json
-
-{
-  "urls": ["https://example1.com", "https://example2.com"],
-  "workspace_id": "workspace-uuid",
-  "options": {...}
-}
-
-Response:
-{
-  "batch_id": "uuid",
-  "status": "processing|completed|failed",
-  "results": [...],
-  "failed_urls": [...],
-  "progress": {
-    "completed": 8,
-    "total": 10
-  }
-}
-```
-
-#### Insights Endpoint
-```go
-GET /api/v1/insights?workspace_id=uuid&limit=10&status=pending
-
-Response:
-{
-  "insights": [
-    {
-      "id": "uuid",
-      "type": "performance_bottleneck",
-      "priority": "high",
-      "title": "Mobile page load time exceeds 3 seconds",
-      "description": "Your mobile pages are loading slowly...",
-      "impact_score": 85,
-      "effort_score": 30,
-      "recommendations": [...],
-      "data_source": {...},
-      "created_at": "2024-01-01T00:00:00Z",
-      "status": "pending|applied|dismissed"
-    }
-  ],
-  "pagination": {...}
-}
-```
-
-#### Events Endpoint
-```go
-POST /api/v1/events
-Content-Type: application/json
-
-{
-  "session_id": "session-uuid",
-  "workspace_id": "workspace-uuid",
-  "events": [
-    {
-      "event_id": "uuid",
-      "type": "pageview|click|conversion",
-      "timestamp": "2024-01-01T00:00:00Z",
-      "url": "https://example.com/page",
-      "properties": {...}
-    }
-  ]
-}
-```
-
-#### Metrics Endpoint
-```go
-GET /api/v1/metrics?workspace_id=uuid&start_date=2024-01-01&end_date=2024-01-31&granularity=daily
-
-Response:
-{
-  "metrics": {
-    "conversion_rate": {
-      "current": 3.2,
-      "previous": 2.8,
-      "trend": "up",
-      "data_points": [...]
+  "detected": {
+    "WordPress": {
+      "categories": ["CMS"],
+      "version": "6.0",
+      "confidence": 100
     },
-    "bounce_rate": {...},
-    "avg_session_duration": {...},
-    "page_load_time": {...}
+    "jQuery": {
+      "categories": ["JavaScript libraries"],
+      "version": "3.6.0",
+      "confidence": 100
+    }
   },
-  "kpis": [...],
-  "anomalies": [...]
+  "content_type": "text/html; charset=utf-8"
 }
 ```
 
-### Core Services
-
-#### AnalysisService
+#### Health Check Endpoint
 ```go
-type AnalysisService interface {
-    AnalyzeURL(ctx context.Context, req *AnalysisRequest) (*AnalysisResult, error)
-    BatchAnalyze(ctx context.Context, req *BatchAnalysisRequest) (*BatchAnalysisResult, error)
-    GetAnalysisHistory(ctx context.Context, workspaceID string, filters *AnalysisFilters) ([]*AnalysisResult, error)
-}
+GET /health
 
-type AnalysisRequest struct {
-    URL         string
-    SessionID   *string
-    WorkspaceID string
-    Options     AnalysisOptions
-}
-
-type AnalysisOptions struct {
-    IncludePerformance   bool
-    IncludeSEO          bool
-    IncludeAccessibility bool
-    IncludeSecurity     bool
-    UserAgent           string
+Response:
+{
+  "status": "ok"
 }
 ```
 
-#### InsightsService
+### Core Components
+
+#### HTTP Server
 ```go
-type InsightsService interface {
-    GenerateInsights(ctx context.Context, workspaceID string) ([]*Insight, error)
-    GetInsights(ctx context.Context, workspaceID string, filters *InsightFilters) ([]*Insight, error)
-    UpdateInsightStatus(ctx context.Context, insightID string, status InsightStatus) error
-}
-
-type Insight struct {
-    ID              string
-    Type            InsightType
-    Priority        Priority
-    Title           string
-    Description     string
-    ImpactScore     int
-    EffortScore     int
-    Recommendations []Recommendation
-    DataSource      map[string]interface{}
-    CreatedAt       time.Time
-    Status          InsightStatus
-}
-```
-
-#### EventService
-```go
-type EventService interface {
-    TrackEvents(ctx context.Context, req *EventTrackingRequest) error
-    GetEvents(ctx context.Context, filters *EventFilters) ([]*Event, error)
-    GetSessions(ctx context.Context, filters *SessionFilters) ([]*Session, error)
-}
-
-type Event struct {
-    ID          string
-    SessionID   string
-    WorkspaceID string
-    Type        EventType
-    Timestamp   time.Time
-    URL         string
-    Properties  map[string]interface{}
-}
-```
-
-#### MetricsService
-```go
-type MetricsService interface {
-    GetMetrics(ctx context.Context, req *MetricsRequest) (*MetricsResponse, error)
-    GetKPIs(ctx context.Context, workspaceID string, timeRange TimeRange) (*KPIResponse, error)
-    DetectAnomalies(ctx context.Context, workspaceID string) ([]*Anomaly, error)
-}
-```
-
-### Enhanced Analysis Pipeline
-
-#### Performance Analysis
-```go
-type PerformanceAnalyzer struct {
-    client *http.Client
-}
-
-func (p *PerformanceAnalyzer) Analyze(url string, options AnalysisOptions) (*PerformanceMetrics, error) {
-    // Measure load times, resource sizes, Core Web Vitals
-    // Parse resource timing data
-    // Calculate performance scores
-}
-
-type PerformanceMetrics struct {
-    LoadTimeMS              int
-    FirstContentfulPaint    int
-    LargestContentfulPaint  int
-    CumulativeLayoutShift   float64
-    FirstInputDelay         int
-    ResourceCount           int
-    TotalSizeKB            int
-    ImageOptimization      OptimizationScore
-    CSSOptimization        OptimizationScore
-    JSOptimization         OptimizationScore
-}
-```
-
-#### SEO Analysis
-```go
-type SEOAnalyzer struct{}
-
-func (s *SEOAnalyzer) Analyze(html []byte, headers http.Header) (*SEOMetrics, error) {
-    // Parse HTML for meta tags, headings, structured data
-    // Analyze content structure and optimization
-    // Check for SEO best practices
-}
-
-type SEOMetrics struct {
-    Title           string
-    MetaDescription string
-    H1Count         int
-    H2Count         int
-    StructuredData  []StructuredDataItem
-    ImageAltTags    int
-    InternalLinks   int
-    ExternalLinks   int
-    Score           int
-    Issues          []SEOIssue
-}
-```
-
-#### Accessibility Analysis
-```go
-type AccessibilityAnalyzer struct{}
-
-func (a *AccessibilityAnalyzer) Analyze(html []byte) (*AccessibilityMetrics, error) {
-    // Check WCAG compliance
-    // Analyze color contrast, alt tags, ARIA labels
-    // Identify accessibility issues
-}
-
-type AccessibilityMetrics struct {
-    Score       int
-    WCAGLevel   string
-    Issues      []AccessibilityIssue
-    ColorContrast struct {
-        Passed int
-        Failed int
+func main() {
+    r := mux.NewRouter()
+    
+    // Health endpoint
+    r.HandleFunc("/health", healthHandler).Methods("GET")
+    
+    // Analysis endpoint
+    r.HandleFunc("/v1/analyze", analyzeHandler).Methods("POST")
+    
+    srv := &http.Server{
+        Addr:         ":8080",
+        Handler:      r,
+        ReadTimeout:  10 * time.Second,
+        WriteTimeout: 30 * time.Second,
+        IdleTimeout:  60 * time.Second,
     }
-    AltTags struct {
-        Present int
-        Missing int
+    
+    srv.ListenAndServe()
+}
+```
+
+#### Request/Response Types
+```go
+type AnalyzeRequest struct {
+    URL string `json:"url"`
+}
+
+type AnalyzeResponse struct {
+    URL         string                 `json:"url"`
+    Detected    map[string]map[string]any `json:"detected"`
+    ContentType string                 `json:"content_type,omitempty"`
+}
+
+type HealthResponse struct {
+    Status string `json:"status"`
+}
+```
+
+#### HTTP Client Configuration
+```go
+func createHTTPClient() *http.Client {
+    return &http.Client{
+        Timeout: 15 * time.Second,
+        Transport: &http.Transport{
+            DialContext: (&net.Dialer{
+                Timeout: 5 * time.Second,
+            }).DialContext,
+            MaxIdleConns:        10,
+            IdleConnTimeout:     30 * time.Second,
+            TLSHandshakeTimeout: 5 * time.Second,
+        },
     }
 }
 ```
 
-#### Security Analysis
+### Analysis Pipeline
+
+#### Wappalyzer Integration
 ```go
-type SecurityAnalyzer struct{}
+func analyzeHandler(w http.ResponseWriter, r *http.Request) {
+    var req AnalyzeRequest
+    if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.URL == "" {
+        http.Error(w, `{"error":"invalid request: url required"}`, http.StatusBadRequest)
+        return
+    }
 
-func (s *SecurityAnalyzer) Analyze(headers http.Header, url string) (*SecurityMetrics, error) {
-    // Check security headers
-    // Analyze HTTPS configuration
-    // Identify security vulnerabilities
+    // Fetch URL content
+    client := createHTTPClient()
+    resp, err := client.Get(req.URL)
+    if err != nil {
+        http.Error(w, `{"error":"fetch failed"}`, http.StatusBadGateway)
+        return
+    }
+    defer resp.Body.Close()
+
+    body, _ := io.ReadAll(resp.Body)
+
+    // Initialize wappalyzer
+    wc, err := wappalyzer.New()
+    if err != nil {
+        http.Error(w, `{"error":"wappalyzer init failed"}`, http.StatusInternalServerError)
+        return
+    }
+
+    // Perform fingerprinting
+    detected := wc.Fingerprint(resp.Header, body)
+
+    // Return results
+    result := AnalyzeResponse{
+        URL:         req.URL,
+        Detected:    detected,
+        ContentType: resp.Header.Get("Content-Type"),
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(result)
 }
-
-type SecurityMetrics struct {
-    HTTPS                bool
-    HSTS                bool
-    ContentSecurityPolicy bool
-    XFrameOptions       bool
-    XContentTypeOptions bool
-    Score               int
-    Issues              []SecurityIssue
-}
-```
-
-### AI Insights Engine
-
-#### Rules-Based Insight Generator
-```go
-type InsightGenerator struct {
-    rules []InsightRule
-}
-
-type InsightRule interface {
-    Evaluate(ctx context.Context, data *AnalysisData) (*Insight, error)
-    Priority() Priority
-    Type() InsightType
-}
-
-// Example rules
-type PerformanceBottleneckRule struct{}
-type ConversionFunnelRule struct{}
-type SEOOptimizationRule struct{}
-type AccessibilityIssueRule struct{}
 ```
 
 ## Data Models
 
-### Database Schema
+### In-Memory Data Structures
 
-#### Analysis Results
-```sql
-CREATE TABLE analysis_results (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    workspace_id UUID NOT NULL,
-    session_id UUID,
-    url TEXT NOT NULL,
-    technologies JSONB,
-    performance_metrics JSONB,
-    seo_metrics JSONB,
-    accessibility_metrics JSONB,
-    security_metrics JSONB,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+Since this is a stateless API, all data is processed in memory without persistence:
 
-CREATE INDEX idx_analysis_workspace_created ON analysis_results(workspace_id, created_at);
-CREATE INDEX idx_analysis_session ON analysis_results(session_id);
-CREATE INDEX idx_analysis_url ON analysis_results USING hash(url);
-```
+```go
+// Request structure
+type AnalyzeRequest struct {
+    URL string `json:"url" validate:"required,url"`
+}
 
-#### Sessions and Events
-```sql
-CREATE TABLE sessions (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    workspace_id UUID NOT NULL,
-    user_id TEXT,
-    started_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    ended_at TIMESTAMP WITH TIME ZONE,
-    duration_seconds INTEGER,
-    page_views INTEGER DEFAULT 0,
-    events_count INTEGER DEFAULT 0,
-    device_type TEXT,
-    browser TEXT,
-    country TEXT,
-    referrer TEXT
-);
+// Response structure  
+type AnalyzeResponse struct {
+    URL         string                 `json:"url"`
+    Detected    map[string]map[string]any `json:"detected"`
+    ContentType string                 `json:"content_type,omitempty"`
+}
 
-CREATE TABLE events (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    session_id UUID NOT NULL REFERENCES sessions(id),
-    workspace_id UUID NOT NULL,
-    event_type TEXT NOT NULL,
-    url TEXT,
-    timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    properties JSONB,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+// Health check response
+type HealthResponse struct {
+    Status string `json:"status"`
+}
 
-CREATE INDEX idx_events_session ON events(session_id);
-CREATE INDEX idx_events_workspace_timestamp ON events(workspace_id, timestamp);
-CREATE INDEX idx_events_type ON events(event_type);
-```
-
-#### Insights
-```sql
-CREATE TABLE insights (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    workspace_id UUID NOT NULL,
-    insight_type TEXT NOT NULL,
-    priority TEXT NOT NULL,
-    title TEXT NOT NULL,
-    description TEXT,
-    impact_score INTEGER,
-    effort_score INTEGER,
-    recommendations JSONB,
-    data_source JSONB,
-    status TEXT DEFAULT 'pending',
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
-CREATE INDEX idx_insights_workspace_status ON insights(workspace_id, status);
-CREATE INDEX idx_insights_priority ON insights(priority);
-```
-
-#### Metrics Aggregations
-```sql
-CREATE TABLE daily_metrics (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    workspace_id UUID NOT NULL,
-    date DATE NOT NULL,
-    total_sessions INTEGER DEFAULT 0,
-    total_page_views INTEGER DEFAULT 0,
-    unique_visitors INTEGER DEFAULT 0,
-    bounce_rate DECIMAL(5,2),
-    avg_session_duration INTEGER,
-    conversion_rate DECIMAL(5,2),
-    avg_load_time INTEGER,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
-CREATE UNIQUE INDEX idx_daily_metrics_workspace_date ON daily_metrics(workspace_id, date);
+// Error response
+type ErrorResponse struct {
+    Error string `json:"error"`
+}
 ```
 
 ## Error Handling
 
-### Error Response Format
+### Error Response Strategy
 ```go
-type APIError struct {
-    Code    string `json:"code"`
-    Message string `json:"message"`
-    Details map[string]interface{} `json:"details,omitempty"`
+// Simple error handling with appropriate HTTP status codes
+func handleError(w http.ResponseWriter, message string, statusCode int) {
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(statusCode)
+    json.NewEncoder(w).Encode(ErrorResponse{Error: message})
 }
 
-// Standard error codes
-const (
-    ErrCodeInvalidRequest   = "INVALID_REQUEST"
-    ErrCodeUnauthorized     = "UNAUTHORIZED"
-    ErrCodeRateLimited      = "RATE_LIMITED"
-    ErrCodeInternalError    = "INTERNAL_ERROR"
-    ErrCodeServiceUnavailable = "SERVICE_UNAVAILABLE"
-)
+// Error scenarios:
+// 400 Bad Request - Invalid JSON or missing URL
+// 502 Bad Gateway - Cannot fetch the provided URL  
+// 500 Internal Server Error - Wappalyzer initialization failure
+// 408 Request Timeout - HTTP client timeout
 ```
 
-### Circuit Breaker Pattern
+### Timeout Configuration
 ```go
-type CircuitBreaker struct {
-    maxFailures int
-    timeout     time.Duration
-    state       CircuitState
-}
-
-func (cb *CircuitBreaker) Execute(fn func() error) error {
-    // Implement circuit breaker logic
-    // Fail fast when service is down
-    // Auto-recovery after timeout
-}
+const (
+    HTTPClientTimeout     = 15 * time.Second
+    ConnectionTimeout     = 5 * time.Second
+    TLSHandshakeTimeout   = 5 * time.Second
+    ServerReadTimeout     = 10 * time.Second
+    ServerWriteTimeout    = 30 * time.Second
+    ServerIdleTimeout     = 60 * time.Second
+)
 ```
 
 ## Testing Strategy
 
 ### Unit Testing
-- Service layer unit tests with mocked dependencies
-- Repository layer tests with test database
-- Analysis engine tests with sample data
-- Insight generation rule tests
+```go
+func TestAnalyzeHandler(t *testing.T) {
+    // Test valid requests
+    // Test invalid JSON
+    // Test missing URL
+    // Test HTTP client errors
+    // Test wappalyzer initialization errors
+}
+
+func TestHealthHandler(t *testing.T) {
+    // Test health endpoint returns 200 OK
+    // Test response format
+}
+```
 
 ### Integration Testing
-- API endpoint tests with test database
-- Database migration tests
-- External service integration tests
-- Performance benchmarking tests
-
-### Load Testing
-- Concurrent analysis request handling
-- Database performance under load
-- Memory usage and garbage collection
-- Rate limiting effectiveness
-
-### Test Data Management
 ```go
-type TestDataManager struct {
-    db *sql.DB
+func TestEndToEnd(t *testing.T) {
+    // Start test server
+    // Make real HTTP requests
+    // Verify response format and content
+    // Test with various website types
 }
+```
 
-func (tdm *TestDataManager) SetupTestWorkspace() *Workspace {
-    // Create test workspace with sample data
-}
+### Manual Testing
+```bash
+# Health check
+curl -s http://localhost:8080/health
 
-func (tdm *TestDataManager) CleanupTestData() {
-    // Clean up test data after tests
-}
+# Technology detection
+curl -s -X POST http://localhost:8080/v1/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://example.com"}' | jq .
 ```
 
 ## Performance Considerations
 
-### Caching Strategy
-- Redis for frequently accessed metrics
-- In-memory caching for analysis rules
-- HTTP response caching with appropriate TTL
-- Database query result caching
-
-### Database Optimization
-- Proper indexing for time-series queries
-- Partitioning for large tables
-- Connection pooling and prepared statements
-- Read replicas for analytics queries
-
-### Concurrent Processing
-- Worker pools for batch analysis
-- Background job processing for insights
-- Rate limiting per workspace
-- Resource isolation between tenants
-
-### Monitoring and Observability
+### Resource Management
 ```go
-type Metrics struct {
-    RequestDuration   prometheus.HistogramVec
-    RequestCount      prometheus.CounterVec
-    ActiveConnections prometheus.Gauge
-    ErrorRate         prometheus.CounterVec
+// HTTP client with connection pooling
+client := &http.Client{
+    Timeout: 15 * time.Second,
+    Transport: &http.Transport{
+        MaxIdleConns:        10,
+        IdleConnTimeout:     30 * time.Second,
+        MaxIdleConnsPerHost: 2,
+    },
 }
+```
 
-func (m *Metrics) RecordRequest(endpoint string, duration time.Duration, status int) {
-    // Record metrics for monitoring
-}
+### Memory Management
+- No persistent storage means no memory leaks from database connections
+- HTTP response bodies are read and closed properly
+- Wappalyzer engine is initialized once per request (stateless)
+- Garbage collection handles temporary objects automatically
+
+### Concurrency
+- Go's built-in HTTP server handles concurrent requests efficiently
+- Each request is processed in its own goroutine
+- No shared state between requests eliminates race conditions
+- HTTP client connection pooling reduces connection overhead
+
+### Deployment Optimization
+```dockerfile
+# Multi-stage build for minimal image size
+FROM golang:1.24-alpine AS builder
+# ... build steps ...
+
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates tzdata
+# ... minimal runtime image ...
 ```

@@ -7,8 +7,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 	
-	"github.com/projectdiscovery/wappalyzergo/internal/database"
-	"github.com/projectdiscovery/wappalyzergo/internal/cache"
+	"github.com/webailyzer/webailyzer-lite-api/internal/database"
+	"github.com/webailyzer/webailyzer-lite-api/internal/cache"
 )
 
 // MonitoringService provides system monitoring and metrics collection

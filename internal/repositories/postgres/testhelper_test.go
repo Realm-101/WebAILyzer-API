@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/projectdiscovery/wappalyzergo/internal/database"
+	"github.com/webailyzer/webailyzer-lite-api/internal/database"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 )

@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	
-	"github.com/projectdiscovery/wappalyzergo/internal/monitoring"
+	"github.com/webailyzer/webailyzer-lite-api/internal/monitoring"
 )
 
 func TestMetricsMiddleware_CollectMetrics(t *testing.T) {

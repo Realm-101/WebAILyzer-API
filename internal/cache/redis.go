@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 	"github.com/redis/go-redis/v9"
-	"github.com/projectdiscovery/wappalyzergo/internal/config"
+	"github.com/webailyzer/webailyzer-lite-api/internal/config"
 	"github.com/sirupsen/logrus"
 )
 

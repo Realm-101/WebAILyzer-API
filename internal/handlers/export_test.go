@@ -12,8 +12,8 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/projectdiscovery/wappalyzergo/internal/middleware"
-	"github.com/projectdiscovery/wappalyzergo/internal/services"
+	"github.com/webailyzer/webailyzer-lite-api/internal/middleware"
+	"github.com/webailyzer/webailyzer-lite-api/internal/services"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

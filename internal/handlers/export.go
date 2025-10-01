@@ -9,8 +9,8 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/google/uuid"
-	"github.com/projectdiscovery/wappalyzergo/internal/middleware"
-	"github.com/projectdiscovery/wappalyzergo/internal/services"
+	"github.com/webailyzer/webailyzer-lite-api/internal/middleware"
+	"github.com/webailyzer/webailyzer-lite-api/internal/services"
 	"github.com/sirupsen/logrus"
 )
 

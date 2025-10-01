@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/projectdiscovery/wappalyzergo/internal/models"
+	"github.com/webailyzer/webailyzer-lite-api/internal/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

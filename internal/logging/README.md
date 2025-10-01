@@ -19,7 +19,7 @@ This package provides a structured logging interface for the WebAILyzer API usin
 package main
 
 import (
-    "github.com/projectdiscovery/wappalyzergo/internal/logging"
+    "github.com/webailyzer/webailyzer-lite-api/internal/logging"
 )
 
 func main() {

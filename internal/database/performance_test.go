@@ -6,7 +6,7 @@ import (
 	"time"
 	"github.com/stretchr/testify/assert"
 	"github.com/sirupsen/logrus"
-	"github.com/projectdiscovery/wappalyzergo/internal/config"
+	"github.com/webailyzer/webailyzer-lite-api/internal/config"
 )
 
 func TestPerformanceService_GetConnectionStats(t *testing.T) {

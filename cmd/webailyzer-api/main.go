@@ -14,14 +14,14 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	
-	"github.com/projectdiscovery/wappalyzergo/internal/config"
-	"github.com/projectdiscovery/wappalyzergo/internal/database"
-	"github.com/projectdiscovery/wappalyzergo/internal/cache"
-	"github.com/projectdiscovery/wappalyzergo/internal/handlers"
-	"github.com/projectdiscovery/wappalyzergo/internal/middleware"
-	"github.com/projectdiscovery/wappalyzergo/internal/monitoring"
-	"github.com/projectdiscovery/wappalyzergo/internal/repositories/postgres"
-	"github.com/projectdiscovery/wappalyzergo/internal/services"
+	"github.com/webailyzer/webailyzer-lite-api/internal/config"
+	"github.com/webailyzer/webailyzer-lite-api/internal/database"
+	"github.com/webailyzer/webailyzer-lite-api/internal/cache"
+	"github.com/webailyzer/webailyzer-lite-api/internal/handlers"
+	"github.com/webailyzer/webailyzer-lite-api/internal/middleware"
+	"github.com/webailyzer/webailyzer-lite-api/internal/monitoring"
+	"github.com/webailyzer/webailyzer-lite-api/internal/repositories/postgres"
+	"github.com/webailyzer/webailyzer-lite-api/internal/services"
 )
 
 func main() {

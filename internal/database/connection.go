@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/projectdiscovery/wappalyzergo/internal/config"
+	"github.com/webailyzer/webailyzer-lite-api/internal/config"
 	"github.com/sirupsen/logrus"
 )
 
