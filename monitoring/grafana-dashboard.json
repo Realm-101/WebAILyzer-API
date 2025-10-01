@@ -1,0 +1,283 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "WebAIlyzer Lite API Monitoring",
+    "tags": ["webailyzer", "api", "monitoring"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "HTTP Request Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(webailyzer_http_requests_total[5m])",
+            "legendFormat": "{{method}} {{endpoint}} {{status_code}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Requests/sec"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "id": 2,
+        "title": "HTTP Request Duration",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(webailyzer_http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "95th percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(webailyzer_http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "50th percentile"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Duration (seconds)"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 0
+        }
+      },
+      {
+        "id": 3,
+        "title": "Active HTTP Connections",
+        "type": "singlestat",
+        "targets": [
+          {
+            "expr": "webailyzer_http_active_connections"
+          }
+        ],
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 0,
+          "y": 8
+        }
+      },
+      {
+        "id": 4,
+        "title": "Analysis Operations Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(webailyzer_analysis_operations_total[5m])",
+            "legendFormat": "{{type}} {{status}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Operations/sec"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 6,
+          "y": 8
+        }
+      },
+      {
+        "id": 5,
+        "title": "Analysis Duration",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(webailyzer_analysis_duration_seconds_bucket[5m]))",
+            "legendFormat": "95th percentile {{type}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Duration (seconds)"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 18,
+          "y": 8
+        }
+      },
+      {
+        "id": 6,
+        "title": "Database Connections",
+        "type": "singlestat",
+        "targets": [
+          {
+            "expr": "webailyzer_database_connections"
+          }
+        ],
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 0,
+          "y": 16
+        }
+      },
+      {
+        "id": 7,
+        "title": "Database Operation Duration",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(webailyzer_database_operation_duration_seconds_bucket[5m]))",
+            "legendFormat": "95th percentile {{operation}} {{table}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Duration (seconds)"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 6,
+          "y": 16
+        }
+      },
+      {
+        "id": 8,
+        "title": "Cache Hit Ratio",
+        "type": "singlestat",
+        "targets": [
+          {
+            "expr": "webailyzer_cache_hit_ratio"
+          }
+        ],
+        "format": "percentunit",
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 18,
+          "y": 16
+        }
+      },
+      {
+        "id": 9,
+        "title": "Cache Operations Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(webailyzer_cache_operations_total[5m])",
+            "legendFormat": "{{operation}} {{status}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Operations/sec"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 24
+        }
+      },
+      {
+        "id": 10,
+        "title": "Error Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(webailyzer_analysis_errors_total[5m])",
+            "legendFormat": "{{type}} {{error_type}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Errors/sec"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 24
+        }
+      },
+      {
+        "id": 11,
+        "title": "Active Workspaces",
+        "type": "singlestat",
+        "targets": [
+          {
+            "expr": "webailyzer_workspaces_total"
+          }
+        ],
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 0,
+          "y": 32
+        }
+      },
+      {
+        "id": 12,
+        "title": "Session Creation Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(webailyzer_sessions_total[5m])",
+            "legendFormat": "{{workspace_id}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Sessions/sec"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 6,
+          "y": 32
+        }
+      },
+      {
+        "id": 13,
+        "title": "Insights Generation Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(webailyzer_insights_generated_total[5m])",
+            "legendFormat": "{{type}} {{priority}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Insights/sec"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 18,
+          "y": 32
+        }
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "30s"
+  }
+}

@@ -1,0 +1,65 @@
+groups:
+  - name: webailyzer_alerts
+    rules:
+      - alert: HighErrorRate
+        expr: rate(webailyzer_http_requests_total{status_code=~"5.."}[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value }} errors per second for endpoint {{ $labels.endpoint }}"
+
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(webailyzer_http_request_duration_seconds_bucket[5m])) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is {{ $value }}s for endpoint {{ $labels.endpoint }}"
+
+      - alert: DatabaseConnectionsHigh
+        expr: webailyzer_database_connections > 80
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High database connection usage"
+          description: "Database connections are at {{ $value }}, approaching limits"
+
+      - alert: CacheHitRateLow
+        expr: webailyzer_cache_hit_ratio < 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low cache hit ratio"
+          description: "Cache hit ratio is {{ $value }}, indicating potential performance issues"
+
+      - alert: AnalysisErrorsHigh
+        expr: rate(webailyzer_analysis_errors_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High analysis error rate"
+          description: "Analysis error rate is {{ $value }} errors per second for type {{ $labels.type }}"
+
+      - alert: ServiceDown
+        expr: up{job="webailyzer-lite-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "WebAIlyzer Lite API is down"
+          description: "The WebAIlyzer Lite API service has been down for more than 1 minute"
+
+      - alert: SlowAnalysisOperations
+        expr: histogram_quantile(0.95, rate(webailyzer_analysis_duration_seconds_bucket[5m])) > 30
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow analysis operations detected"
+          description: "95th percentile analysis duration is {{ $value }}s for type {{ $labels.type }}"

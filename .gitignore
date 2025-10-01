@@ -1,0 +1,125 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+dist/
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+coverage.html
+coverage.out
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Go workspace file
+go.work
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Configuration files with secrets
+config.local.yaml
+config.production.yaml
+
+# Log files
+*.log
+logs/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+tmp/
+temp/
+
+# Build artifacts
+build/
+target/
+
+# Docker volumes
+postgres_data/
+redis_data/
+
+# Test artifacts
+test-results/
+profiles/
+debug-logs/
+
+# Backup files
+*.bak
+*.backup
+
+# Certificate files
+*.pem
+*.key
+*.crt
+*.p12
+
+# Performance profiling files
+*.prof
+*.pprof
+
+# Documentation build artifacts
+docs/_build/
+site/
+
+# Node.js (if using for documentation or tooling)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python (if using for scripts or tooling)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Terraform (if using for infrastructure)
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Kubernetes secrets
+*-secret.yaml
+*-secrets.yaml
+
+# Local development overrides
+docker-compose.override.yml
+docker-compose.local.yml
