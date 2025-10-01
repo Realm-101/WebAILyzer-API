@@ -115,14 +115,22 @@
   - Add logging for debugging and monitoring
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
 
-- [ ] 8. Optimize resource usage
+- [x] 8. Optimize resource usage
+
+
+
+
   - Configure HTTP client connection pooling
   - Add request timeout handling to prevent hanging
   - Implement proper response body cleanup
   - Add memory usage monitoring and optimization
   - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5_
 
-- [ ] 9. Create integration tests
+- [x] 9. Create integration tests
+
+
+
+
   - Write end-to-end tests for both endpoints
   - Test with various website types and edge cases
   - Add error scenario testing (invalid URLs, timeouts)

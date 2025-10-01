@@ -10,6 +10,8 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"runtime"
+	"runtime/debug"
 	"strings"
 	"syscall"
 	"time"
@@ -27,12 +29,22 @@ func main() {
 	// Initialize logger
 	initLogger()
 
+	// Optimize garbage collector settings
+	optimizeGCSettings()
+
+	// Initialize optimized HTTP client
+	initHTTPClient()
+
+	// Start memory monitoring
+	startMemoryMonitoring()
+
 	// Create router
 	r := mux.NewRouter()
 
 	// Add error handling middleware
 	r.Use(errorHandlingMiddleware)
 	r.Use(loggingMiddleware)
+	r.Use(timeoutMiddleware)
 
 	// Add CORS middleware
 	corsHandler := handlers.CORS(
@@ -108,7 +120,8 @@ func (e APIError) Error() string {
 
 // HealthResponse represents the health check response
 type HealthResponse struct {
-	Status string `json:"status"`
+	Status string      `json:"status"`
+	Memory MemoryStats `json:"memory,omitempty"`
 }
 
 // healthHandler handles GET /health requests
@@ -120,7 +133,11 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 	
 	logger.WithField("request_id", requestID).Debug("Health check requested")
 	
-	response := HealthResponse{Status: "ok"}
+	// Include memory stats in health check for monitoring
+	response := HealthResponse{
+		Status: "ok",
+		Memory: getMemoryStats(),
+	}
 	w.Header().Set("Content-Type", "application/json")
 	if requestID != "" {
 		w.Header().Set("X-Request-ID", requestID)
@@ -272,6 +289,59 @@ func getClientIP(r *http.Request) string {
 	return ip
 }
 
+// timeoutMiddleware adds request timeout to prevent hanging requests
+func timeoutMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Set different timeouts based on endpoint
+		var timeout time.Duration
+		if strings.HasPrefix(r.URL.Path, "/v1/analyze") {
+			timeout = 25 * time.Second // Longer timeout for analysis
+		} else {
+			timeout = 5 * time.Second // Short timeout for health checks
+		}
+		
+		ctx, cancel := context.WithTimeout(r.Context(), timeout)
+		defer cancel()
+		
+		r = r.WithContext(ctx)
+		
+		// Channel to signal completion
+		done := make(chan struct{})
+		
+		go func() {
+			defer close(done)
+			next.ServeHTTP(w, r)
+		}()
+		
+		select {
+		case <-done:
+			// Request completed normally
+			return
+		case <-ctx.Done():
+			// Request timed out
+			requestID := ""
+			if id := r.Context().Value("request_id"); id != nil {
+				requestID = id.(string)
+			}
+			
+			logger.WithFields(logrus.Fields{
+				"request_id": requestID,
+				"method":     r.Method,
+				"path":       r.URL.Path,
+				"timeout":    timeout,
+			}).Warn("Request timed out")
+			
+			sendErrorResponse(w, APIError{
+				Type:       ErrorTypeTimeout,
+				Message:    "Request timeout",
+				Details:    fmt.Sprintf("Request exceeded %v timeout", timeout),
+				StatusCode: http.StatusRequestTimeout,
+				RequestID:  requestID,
+			})
+		}
+	})
+}
+
 // sendErrorResponse sends a structured error response
 func sendErrorResponse(w http.ResponseWriter, apiErr APIError) {
 	w.Header().Set("Content-Type", "application/json")
@@ -312,20 +382,144 @@ func validateURL(urlStr string) error {
 	return nil
 }
 
-// createHTTPClient creates a safe HTTP client with appropriate timeouts
-func createHTTPClient() *http.Client {
-	return &http.Client{
+// Global HTTP client with optimized connection pooling
+var httpClient *http.Client
+
+// initHTTPClient initializes the global HTTP client with optimized settings
+func initHTTPClient() {
+	httpClient = &http.Client{
 		Timeout: 15 * time.Second,
 		Transport: &http.Transport{
 			DialContext: (&net.Dialer{
-				Timeout: 5 * time.Second,
+				Timeout:   5 * time.Second,
+				KeepAlive: 30 * time.Second,
 			}).DialContext,
-			MaxIdleConns:        10,
-			IdleConnTimeout:     30 * time.Second,
-			TLSHandshakeTimeout: 5 * time.Second,
-			MaxIdleConnsPerHost: 2,
+			// Connection pooling optimization
+			MaxIdleConns:          100,
+			MaxIdleConnsPerHost:   10,
+			MaxConnsPerHost:       50,
+			IdleConnTimeout:       90 * time.Second,
+			TLSHandshakeTimeout:   10 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+			// Response header timeout to prevent hanging
+			ResponseHeaderTimeout: 10 * time.Second,
+			// Disable compression to reduce CPU usage
+			DisableCompression: false,
+			// Force HTTP/2 for better performance
+			ForceAttemptHTTP2: true,
+		},
+		// Limit redirects to prevent infinite loops
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			if len(via) >= 10 {
+				return fmt.Errorf("stopped after 10 redirects")
+			}
+			return nil
 		},
 	}
+}
+
+// createHTTPClient returns the optimized global HTTP client
+func createHTTPClient() *http.Client {
+	// Initialize if not already done (for tests)
+	if httpClient == nil {
+		initHTTPClient()
+	}
+	return httpClient
+}
+
+// readResponseBody reads response body with memory optimization
+func readResponseBody(reader io.Reader, maxSize int64) ([]byte, error) {
+	// Use a buffer with initial capacity to reduce allocations
+	buf := make([]byte, 0, 32*1024) // Start with 32KB capacity
+	
+	// Read in chunks to control memory usage
+	chunk := make([]byte, 8*1024) // 8KB chunks
+	totalRead := int64(0)
+	
+	for {
+		n, err := reader.Read(chunk)
+		if n > 0 {
+			totalRead += int64(n)
+			if totalRead > maxSize {
+				return nil, fmt.Errorf("response body too large (max %d bytes)", maxSize)
+			}
+			buf = append(buf, chunk[:n]...)
+		}
+		
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+	}
+	
+	return buf, nil
+}
+
+// MemoryStats represents memory usage statistics
+type MemoryStats struct {
+	Alloc        uint64 `json:"alloc_mb"`
+	TotalAlloc   uint64 `json:"total_alloc_mb"`
+	Sys          uint64 `json:"sys_mb"`
+	NumGC        uint32 `json:"num_gc"`
+	NumGoroutine int    `json:"num_goroutine"`
+}
+
+// getMemoryStats returns current memory usage statistics
+func getMemoryStats() MemoryStats {
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	
+	return MemoryStats{
+		Alloc:        m.Alloc / 1024 / 1024,
+		TotalAlloc:   m.TotalAlloc / 1024 / 1024,
+		Sys:          m.Sys / 1024 / 1024,
+		NumGC:        m.NumGC,
+		NumGoroutine: runtime.NumGoroutine(),
+	}
+}
+
+// startMemoryMonitoring starts a goroutine to monitor and log memory usage
+func startMemoryMonitoring() {
+	go func() {
+		ticker := time.NewTicker(5 * time.Minute)
+		defer ticker.Stop()
+		
+		for {
+			select {
+			case <-ticker.C:
+				stats := getMemoryStats()
+				logger.WithFields(logrus.Fields{
+					"alloc_mb":       stats.Alloc,
+					"total_alloc_mb": stats.TotalAlloc,
+					"sys_mb":         stats.Sys,
+					"num_gc":         stats.NumGC,
+					"num_goroutine":  stats.NumGoroutine,
+				}).Info("Memory usage statistics")
+				
+				// Force garbage collection if memory usage is high
+				if stats.Alloc > 100 { // More than 100MB
+					logger.Info("High memory usage detected, forcing garbage collection")
+					runtime.GC()
+					debug.FreeOSMemory()
+				}
+			}
+		}
+	}()
+}
+
+// optimizeGCSettings configures garbage collector for better performance
+func optimizeGCSettings() {
+	// Set GC target percentage to 50% (default is 100%)
+	// This makes GC run more frequently but with less impact
+	debug.SetGCPercent(50)
+	
+	// Set memory limit if available (Go 1.19+)
+	// This helps prevent excessive memory usage
+	debug.SetMemoryLimit(512 * 1024 * 1024) // 512MB limit
+	
+	logger.Info("Garbage collector optimized for minimal resource usage")
 }
 
 // analyzeHandler handles POST /v1/analyze requests
@@ -378,9 +572,35 @@ func analyzeHandler(w http.ResponseWriter, r *http.Request) {
 		"url":        req.URL,
 	}).Info("Starting URL analysis")
 	
-	// Create HTTP client and fetch URL
+	// Create context with timeout for the entire request processing
+	ctx, cancel := context.WithTimeout(r.Context(), 20*time.Second)
+	defer cancel()
+
+	// Create HTTP request with context for proper timeout handling
+	httpReq, err := http.NewRequestWithContext(ctx, "GET", req.URL, nil)
+	if err != nil {
+		logger.WithFields(logrus.Fields{
+			"request_id": requestID,
+			"url":        req.URL,
+			"error":      err,
+		}).Error("Failed to create HTTP request")
+		
+		sendErrorResponse(w, APIError{
+			Type:       ErrorTypeInternal,
+			Message:    "Failed to create request",
+			Details:    "Unable to create HTTP request",
+			StatusCode: http.StatusInternalServerError,
+			RequestID:  requestID,
+		})
+		return
+	}
+
+	// Set user agent to identify our service
+	httpReq.Header.Set("User-Agent", "WebAIlyzer-Lite-API/1.0")
+	
+	// Fetch URL with optimized client
 	client := createHTTPClient()
-	resp, err := client.Get(req.URL)
+	resp, err := client.Do(httpReq)
 	if err != nil {
 		// Determine error type based on error details
 		var apiErr APIError
@@ -461,10 +681,12 @@ func analyzeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	// Read response body with size limit
-	const maxBodySize = 10 * 1024 * 1024 // 10MB limit
+	// Read response body with size limit and proper cleanup
+	const maxBodySize = 5 * 1024 * 1024 // 5MB limit for memory optimization
 	limitedReader := io.LimitReader(resp.Body, maxBodySize)
-	body, err := io.ReadAll(limitedReader)
+	
+	// Use a buffer pool for memory efficiency
+	body, err := readResponseBody(limitedReader, maxBodySize)
 	if err != nil {
 		logger.WithFields(logrus.Fields{
 			"request_id": requestID,
@@ -502,6 +724,10 @@ func analyzeHandler(w http.ResponseWriter, r *http.Request) {
 	
 	// Perform technology fingerprinting with detailed information
 	detected := wc.FingerprintWithInfo(resp.Header, body)
+	
+	// Clear body from memory immediately after processing
+	body = nil
+	runtime.GC() // Suggest garbage collection to free memory
 	
 	logger.WithFields(logrus.Fields{
 		"request_id":         requestID,

@@ -419,16 +419,16 @@ func TestCreateHTTPClient(t *testing.T) {
 		return
 	}
 	
-	if transport.TLSHandshakeTimeout != 5*time.Second {
-		t.Errorf("TLS handshake timeout should be 5s, got %v", transport.TLSHandshakeTimeout)
+	if transport.TLSHandshakeTimeout != 10*time.Second {
+		t.Errorf("TLS handshake timeout should be 10s, got %v", transport.TLSHandshakeTimeout)
 	}
 	
-	if transport.MaxIdleConns != 10 {
-		t.Errorf("MaxIdleConns should be 10, got %v", transport.MaxIdleConns)
+	if transport.MaxIdleConns != 100 {
+		t.Errorf("MaxIdleConns should be 100, got %v", transport.MaxIdleConns)
 	}
 	
-	if transport.MaxIdleConnsPerHost != 2 {
-		t.Errorf("MaxIdleConnsPerHost should be 2, got %v", transport.MaxIdleConnsPerHost)
+	if transport.MaxIdleConnsPerHost != 10 {
+		t.Errorf("MaxIdleConnsPerHost should be 10, got %v", transport.MaxIdleConnsPerHost)
 	}
 }
 
