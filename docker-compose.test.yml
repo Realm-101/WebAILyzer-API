@@ -1,61 +1,17 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: webailyzer_test_postgres
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: webailyzer_test
-    ports:
-      - "5433:5432"
-    volumes:
-      - postgres_test_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  redis:
-    image: redis:7-alpine
-    container_name: webailyzer_test_redis
-    ports:
-      - "6380:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-
-  webailyzer-api:
+  # WebAIlyzer Lite API for testing (stateless, no external dependencies)
+  webailyzer-lite-api:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: webailyzer_test_api
+    container_name: webailyzer_lite_test_api
     ports:
       - "8081:8080"
-    environment:
-      - DATABASE_HOST=postgres
-      - DATABASE_PORT=5432
-      - DATABASE_USER=postgres
-      - DATABASE_PASSWORD=password
-      - DATABASE_NAME=webailyzer_test
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - LOG_LEVEL=info
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 10s
       timeout: 5s
       retries: 3
-      start_period: 30s
-
-volumes:
-  postgres_test_data:
+      start_period: 10s

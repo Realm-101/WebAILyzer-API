@@ -2,28 +2,13 @@
 
 ## Overview
 
-The WebAIlyzer Lite API provides comprehensive website analysis capabilities including performance metrics, SEO analysis, accessibility checks, security assessments, and AI-powered insights.
+The WebAIlyzer Lite API is a simple web technology detection service that analyzes websites to identify the technologies, frameworks, and libraries they use.
 
-**Base URL:** `https://api.webailyzer.com`  
+**Base URL:** `http://localhost:8080`  
 **Version:** v1  
-**Authentication:** Bearer Token (API Key)
+**Authentication:** None required
 
-## Authentication
-
-All API requests require authentication using a Bearer token in the Authorization header:
-
-```
-Authorization: Bearer YOUR_API_KEY
-```
-
-## Rate Limiting
-
-API requests are rate-limited per workspace. Rate limit information is included in response headers:
-
-- `X-RateLimit-Limit`: Maximum requests allowed in the time window
-- `X-RateLimit-Remaining`: Remaining requests in the current window
-- `X-RateLimit-Reset`: Time when the rate limit resets (Unix timestamp)
-- `Retry-After`: Seconds to wait before retrying (when rate limited)
+## Endpoints
 
 ## Error Handling
 
@@ -31,421 +16,93 @@ The API uses standard HTTP status codes and returns error details in JSON format
 
 ```json
 {
-  "error": {
-    "code": "ERROR_CODE",
-    "message": "Human-readable error message",
-    "details": "Additional error context"
-  }
+  "error": "Human-readable error message"
 }
 ```
 
-### Common Error Codes
+### Common HTTP Status Codes
 
-- `INVALID_API_KEY`: Invalid or missing API key
-- `WORKSPACE_INACTIVE`: Workspace is not active
-- `RATE_LIMIT_EXCEEDED`: Rate limit exceeded
-- `INVALID_REQUEST`: Invalid request parameters
-- `RESOURCE_NOT_FOUND`: Requested resource not found
-- `INTERNAL_ERROR`: Internal server error
-
-## Endpoints
+- `200 OK`: Request successful
+- `400 Bad Request`: Invalid JSON or missing required fields
+- `502 Bad Gateway`: Failed to fetch the provided URL
+- `500 Internal Server Error`: Wappalyzer engine initialization failed
 
 ### Health Check
 
 #### GET /health
 
-Check API health status.
+Check if the API service is running and healthy.
 
 **Response:**
 ```json
 {
-  "status": "healthy",
-  "timestamp": "2024-01-15T10:30:00Z",
-  "version": "1.0.0"
+  "status": "ok"
 }
 ```
 
-### Analysis Endpoints
+**Status Codes:**
+- `200 OK`: Service is healthy
 
-#### POST /api/v1/analyze
+### Website Analysis
 
-Analyze a single URL for various metrics.
+#### POST /v1/analyze
+
+Analyze a website to detect technologies, frameworks, and libraries.
 
 **Request Body:**
+```json
+{
+  "url": "https://example.com"
+}
+```
+
+**Parameters:**
+- `url` (string, required): The URL of the website to analyze
+
+**Response:**
 ```json
 {
   "url": "https://example.com",
-  "workspace_id": "550e8400-e29b-41d4-a716-446655440000",
-  "session_id": "550e8400-e29b-41d4-a716-446655440001",
-  "options": {
-    "include_performance": true,
-    "include_seo": true,
-    "include_accessibility": true,
-    "include_security": true,
-    "include_technologies": true
-  }
-}
-```
-
-**Response:**
-```json
-{
-  "id": "550e8400-e29b-41d4-a716-446655440002",
-  "workspace_id": "550e8400-e29b-41d4-a716-446655440000",
-  "session_id": "550e8400-e29b-41d4-a716-446655440001",
-  "url": "https://example.com",
-  "status": "completed",
-  "technologies": {
-    "detected": ["nginx", "php", "mysql"],
-    "categories": {
-      "web_servers": ["nginx"],
-      "programming_languages": ["php"],
-      "databases": ["mysql"]
-    }
-  },
-  "performance_metrics": {
-    "load_time_ms": 1250,
-    "first_contentful_paint": 800,
-    "largest_contentful_paint": 1200,
-    "cumulative_layout_shift": 0.05,
-    "time_to_interactive": 1500
-  },
-  "seo_metrics": {
-    "title": "Example Website",
-    "meta_description": "This is an example website",
-    "h1_count": 1,
-    "h2_count": 3,
-    "image_alt_missing": 2,
-    "internal_links": 15,
-    "external_links": 5
-  },
-  "accessibility_metrics": {
-    "score": 85,
-    "violations": [
-      {
-        "rule": "color-contrast",
-        "impact": "serious",
-        "description": "Elements must have sufficient color contrast"
-      }
-    ],
-    "passes": 12,
-    "violations_count": 3
-  },
-  "security_metrics": {
-    "https": true,
-    "hsts": false,
-    "ssl_grade": "A",
-    "vulnerabilities": [],
-    "security_headers": {
-      "content_security_policy": false,
-      "x_frame_options": true,
-      "x_content_type_options": true
-    }
-  },
-  "created_at": "2024-01-15T10:30:00Z",
-  "updated_at": "2024-01-15T10:30:05Z"
-}
-```
-
-#### POST /api/v1/batch
-
-Analyze multiple URLs in a single batch request.
-
-**Request Body:**
-```json
-{
-  "urls": [
-    "https://example1.com",
-    "https://example2.com",
-    "https://example3.com"
-  ],
-  "workspace_id": "550e8400-e29b-41d4-a716-446655440000",
-  "session_id": "550e8400-e29b-41d4-a716-446655440001",
-  "options": {
-    "include_performance": true,
-    "include_seo": true
-  }
-}
-```
-
-**Response:**
-```json
-{
-  "batch_id": "550e8400-e29b-41d4-a716-446655440003",
-  "status": "completed",
-  "results": [
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440004",
-      "url": "https://example1.com",
-      "status": "completed",
-      "technologies": {...},
-      "performance_metrics": {...}
-    }
-  ],
-  "failed_urls": [
-    "https://unreachable-site.com"
-  ],
-  "progress": {
-    "total": 3,
-    "completed": 2,
-    "failed": 1
-  },
-  "created_at": "2024-01-15T10:30:00Z",
-  "completed_at": "2024-01-15T10:32:00Z"
-}
-```
-
-#### GET /api/v1/analysis
-
-Retrieve analysis history for a workspace.
-
-**Query Parameters:**
-- `workspace_id` (required): Workspace UUID
-- `limit` (optional): Number of results (default: 50, max: 1000)
-- `offset` (optional): Pagination offset (default: 0)
-- `start_date` (optional): Filter by start date (ISO 8601)
-- `end_date` (optional): Filter by end date (ISO 8601)
-- `url` (optional): Filter by URL pattern
-
-**Response:**
-```json
-{
-  "results": [
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440002",
-      "url": "https://example.com",
-      "status": "completed",
-      "created_at": "2024-01-15T10:30:00Z"
-    }
-  ],
-  "metadata": {
-    "count": 1,
-    "total": 150,
-    "workspace_id": "550e8400-e29b-41d4-a716-446655440000",
-    "filters": {
-      "limit": 50,
-      "offset": 0
-    }
-  }
-}
-```
-
-### Insights Endpoints
-
-#### POST /api/v1/insights/generate
-
-Generate AI-powered insights for a workspace.
-
-**Request Body:**
-```json
-{
-  "workspace_id": "550e8400-e29b-41d4-a716-446655440000",
-  "analysis_ids": ["550e8400-e29b-41d4-a716-446655440002"],
-  "insight_types": ["performance", "seo", "accessibility"]
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "workspace_id": "550e8400-e29b-41d4-a716-446655440000",
-  "insights_generated": 5,
-  "job_id": "550e8400-e29b-41d4-a716-446655440005"
-}
-```
-
-#### GET /api/v1/insights
-
-Retrieve insights for a workspace.
-
-**Query Parameters:**
-- `workspace_id` (required): Workspace UUID
-- `status` (optional): Filter by status (pending, applied, dismissed)
-- `priority` (optional): Filter by priority (low, medium, high, critical)
-- `insight_type` (optional): Filter by type
-- `limit` (optional): Number of results (default: 50)
-- `offset` (optional): Pagination offset
-
-**Response:**
-```json
-{
-  "insights": [
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440006",
-      "workspace_id": "550e8400-e29b-41d4-a716-446655440000",
-      "insight_type": "performance_bottleneck",
-      "priority": "high",
-      "title": "Optimize Image Loading",
-      "description": "Large images are slowing down page load times",
-      "impact_score": 85,
-      "effort_score": 30,
-      "recommendations": {
-        "actions": [
-          "Compress images using WebP format",
-          "Implement lazy loading for below-fold images",
-          "Use responsive image sizes"
-        ],
-        "expected_improvement": "40% faster load times"
-      },
-      "data_source": {
-        "analysis_id": "550e8400-e29b-41d4-a716-446655440002",
-        "url": "https://example.com"
-      },
-      "status": "pending",
-      "created_at": "2024-01-15T10:35:00Z"
-    }
-  ],
-  "pagination": {
-    "limit": 50,
-    "offset": 0,
-    "count": 1,
-    "total": 12
-  }
-}
-```
-
-#### PUT /api/v1/insights/{insight_id}/status
-
-Update the status of an insight.
-
-**Request Body:**
-```json
-{
-  "status": "applied",
-  "notes": "Implemented image compression and lazy loading"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "insight_id": "550e8400-e29b-41d4-a716-446655440006",
-  "status": "applied",
-  "updated_at": "2024-01-15T11:00:00Z"
-}
-```
-
-### Metrics Endpoints
-
-#### GET /api/v1/metrics
-
-Retrieve aggregated metrics for a workspace.
-
-**Query Parameters:**
-- `workspace_id` (required): Workspace UUID
-- `start_date` (required): Start date (ISO 8601)
-- `end_date` (required): End date (ISO 8601)
-- `granularity` (required): Data granularity (hourly, daily, weekly, monthly)
-- `metrics` (optional): Comma-separated list of specific metrics
-
-**Response:**
-```json
-{
-  "metrics": {
-    "avg_load_time": {
-      "current": 1850.5,
-      "previous": 2100.2,
-      "trend": "down",
-      "data_points": [
-        {
-          "timestamp": "2024-01-15T00:00:00Z",
-          "value": 1850.5
-        }
-      ]
+  "detected": {
+    "Nginx": {
+      "categories": ["Web servers"],
+      "confidence": 100,
+      "version": "",
+      "icon": "Nginx.svg",
+      "website": "http://nginx.org/en",
+      "cpe": "cpe:/a:nginx:nginx"
     },
-    "conversion_rate": {
-      "current": 3.2,
-      "previous": 2.8,
-      "trend": "up",
-      "data_points": [...]
-    }
-  },
-  "kpis": [
-    {
-      "name": "Average Load Time",
-      "value": 1850.5,
-      "target": 2000.0,
-      "status": "good",
-      "description": "Average page load time in milliseconds"
-    }
-  ],
-  "anomalies": [
-    {
-      "metric": "conversion_rate",
-      "timestamp": "2024-01-15T10:00:00Z",
-      "expected": 2.9,
-      "actual": 3.2,
-      "severity": "medium",
-      "description": "Conversion rate spike detected"
-    }
-  ],
-  "metadata": {
-    "workspace_id": "550e8400-e29b-41d4-a716-446655440000",
-    "date_range": {
-      "start": "2024-01-08T00:00:00Z",
-      "end": "2024-01-15T00:00:00Z"
+    "Bootstrap": {
+      "categories": ["UI frameworks"],
+      "confidence": 100,
+      "version": "4.3.1",
+      "icon": "Bootstrap.svg",
+      "website": "https://getbootstrap.com"
     },
-    "granularity": "daily",
-    "from_cache": false,
-    "data_source": "real_time"
-  }
-}
-```
-
-### Export Endpoints
-
-#### POST /api/v1/export
-
-Export analysis data in various formats.
-
-**Request Body:**
-```json
-{
-  "workspace_id": "550e8400-e29b-41d4-a716-446655440000",
-  "format": "pdf",
-  "data_types": ["analysis", "insights", "metrics"],
-  "filters": {
-    "start_date": "2024-01-01T00:00:00Z",
-    "end_date": "2024-01-15T23:59:59Z",
-    "urls": ["https://example.com"]
+    "jQuery": {
+      "categories": ["JavaScript libraries"],
+      "confidence": 100,
+      "version": "3.4.1",
+      "icon": "jQuery.svg",
+      "website": "https://jquery.com"
+    }
   },
-  "options": {
-    "include_charts": true,
-    "include_recommendations": true
-  }
+  "content_type": "text/html; charset=utf-8"
 }
 ```
 
-**Response:**
-```json
-{
-  "export_id": "550e8400-e29b-41d4-a716-446655440007",
-  "status": "processing",
-  "format": "pdf",
-  "estimated_completion": "2024-01-15T10:45:00Z",
-  "download_url": null
-}
-```
+**Response Fields:**
+- `url`: The analyzed URL
+- `detected`: Object containing detected technologies with their details
+- `content_type`: The content type of the analyzed page
 
-#### GET /api/v1/export/{export_id}
+**Status Codes:**
+- `200 OK`: Analysis completed successfully
+- `400 Bad Request`: Invalid JSON or missing URL field
+- `502 Bad Gateway`: Failed to fetch the provided URL
+- `500 Internal Server Error`: Wappalyzer engine initialization failed
 
-Check export status and download when ready.
 
-**Response:**
-```json
-{
-  "export_id": "550e8400-e29b-41d4-a716-446655440007",
-  "status": "completed",
-  "format": "pdf",
-  "file_size": 2048576,
-  "download_url": "https://api.webailyzer.com/downloads/export_123.pdf",
-  "expires_at": "2024-01-22T10:45:00Z",
-  "created_at": "2024-01-15T10:40:00Z",
-  "completed_at": "2024-01-15T10:44:30Z"
-}
-```
 
 ## Code Examples
 

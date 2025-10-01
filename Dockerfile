@@ -23,7 +23,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o webailyzer-api ./
 FROM alpine:latest
 
 # Install runtime dependencies
-RUN apk --no-cache add ca-certificates tzdata
+RUN apk --no-cache add ca-certificates tzdata curl
 
 # Create non-root user
 RUN addgroup -g 1001 -S webailyzer && \
@@ -34,11 +34,9 @@ WORKDIR /app
 
 # Copy binary from builder stage
 COPY --from=builder /app/webailyzer-api .
-COPY --from=builder /app/config.yaml .
 
-# Create directories for migrations and logs
-RUN mkdir -p migrations logs && \
-    chown -R webailyzer:webailyzer /app
+# Change ownership to non-root user
+RUN chown webailyzer:webailyzer /app/webailyzer-api
 
 # Switch to non-root user
 USER webailyzer
@@ -46,9 +44,9 @@ USER webailyzer
 # Expose port
 EXPOSE 8080
 
-# Health check
+# Health check - fixed endpoint path to match /health implementation
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/api/health || exit 1
+    CMD curl -f http://localhost:8080/health || exit 1
 
 # Run the application
 CMD ["./webailyzer-api"]

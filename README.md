@@ -1,19 +1,14 @@
 # WebAIlyzer Lite API
 
-A comprehensive website analysis API that provides performance metrics, SEO analysis, accessibility checks, security assessments, and AI-powered insights. Built with Go for high performance and scalability.
+A minimal, lightweight web technology detection API built with Go. Provides simple HTTP endpoints for analyzing websites and detecting technologies using the wappalyzer engine.
 
 ## Features
 
-- **Comprehensive Analysis**: Performance, SEO, accessibility, security, and technology detection
-- **AI-Powered Insights**: Automated recommendations and optimization suggestions
-- **Batch Processing**: Analyze multiple URLs simultaneously
-- **Real-time Metrics**: Track and analyze website performance over time
-- **Export Capabilities**: Generate reports in multiple formats (PDF, CSV, JSON)
-- **Event Tracking**: Monitor user interactions and behavior
-- **Rate Limiting**: Built-in API rate limiting and authentication
-- **Caching**: Redis-based caching for improved performance
-- **Monitoring**: Prometheus metrics and health checks
-- **Scalable Architecture**: Microservices-ready with Docker support
+- **Technology Detection**: Identify web technologies, frameworks, and libraries used by websites
+- **Simple HTTP API**: Two endpoints - health check and website analysis
+- **Docker Support**: Easy deployment with Docker and Docker Compose
+- **Lightweight**: Minimal dependencies and resource usage
+- **Fast Response**: Quick analysis with appropriate timeouts
 
 ## Quick Start
 
@@ -21,8 +16,8 @@ A comprehensive website analysis API that provides performance metrics, SEO anal
 
 ```bash
 # Clone the repository
-git clone https://github.com/projectdiscovery/wappalyzergo.git
-cd wappalyzergo
+git clone https://github.com/your-username/webailyzer-lite-api.git
+cd webailyzer-lite-api
 
 # Start with Docker Compose
 docker-compose up -d
@@ -38,104 +33,75 @@ curl http://localhost:8080/health
 go mod download
 
 # Build the application
-make build
+go build -o webailyzer-api ./cmd/webailyzer-api
 
 # Run the application
-./bin/webailyzer-api
+./webailyzer-api
 ```
 
 ## API Usage
 
-### Authentication
+The API provides two simple endpoints with no authentication required:
 
-All API requests require authentication using a Bearer token:
+### Health Check
+
+Check if the API is running:
 
 ```bash
-curl -H "Authorization: Bearer YOUR_API_KEY" \
-     http://localhost:8080/api/v1/analyze
+curl http://localhost:8080/health
 ```
 
-### Basic Analysis
+Response:
+```json
+{
+  "status": "ok"
+}
+```
 
-Analyze a single website:
+### Website Analysis
+
+Analyze a website to detect technologies:
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/analyze \
-  -H "Authorization: Bearer YOUR_API_KEY" \
+curl -X POST http://localhost:8080/v1/analyze \
   -H "Content-Type: application/json" \
   -d '{
-    "url": "https://example.com",
-    "workspace_id": "550e8400-e29b-41d4-a716-446655440000",
-    "options": {
-      "include_performance": true,
-      "include_seo": true,
-      "include_accessibility": true,
-      "include_security": true
+    "url": "https://example.com"
+  }'
+```
+
+Response:
+```json
+{
+  "url": "https://example.com",
+  "detected": {
+    "Nginx": {
+      "categories": ["Web servers"],
+      "confidence": 100,
+      "version": "",
+      "icon": "Nginx.svg",
+      "website": "http://nginx.org/en",
+      "cpe": "cpe:/a:nginx:nginx"
+    },
+    "Bootstrap": {
+      "categories": ["UI frameworks"],
+      "confidence": 100,
+      "version": "4.3.1",
+      "icon": "Bootstrap.svg",
+      "website": "https://getbootstrap.com"
     }
-  }'
-```
-
-### Batch Analysis
-
-Analyze multiple URLs at once:
-
-```bash
-curl -X POST http://localhost:8080/api/v1/batch \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "urls": ["https://example1.com", "https://example2.com"],
-    "workspace_id": "550e8400-e29b-41d4-a716-446655440000",
-    "options": {
-      "include_performance": true,
-      "include_seo": true
-    }
-  }'
-```
-
-### Generate Insights
-
-Get AI-powered optimization recommendations:
-
-```bash
-curl -X POST http://localhost:8080/api/v1/insights/generate \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "workspace_id": "550e8400-e29b-41d4-a716-446655440000"
-  }'
+  },
+  "content_type": "text/html; charset=utf-8"
+}
 ```
 
 ## Configuration
 
-### Environment Variables
-
-```bash
-# Database Configuration
-DATABASE_HOST=localhost
-DATABASE_PORT=5432
-DATABASE_USER=webailyzer
-DATABASE_PASSWORD=your_password
-DATABASE_NAME=webailyzer
-
-# Redis Configuration
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_PASSWORD=your_redis_password
-
-# Application Configuration
-PORT=8080
-LOG_LEVEL=info
-ENVIRONMENT=production
-
-# Rate Limiting
-RATE_LIMIT_DEFAULT=1000
-RATE_LIMIT_WINDOW_DURATION=1h
-```
+No configuration is required. The API runs on port 8080 by default.
 
 ### Docker Compose Configuration
 
-The included `docker-compose.yml` provides a complete setup with PostgreSQL and Redis:
+The included `docker-compose.yml` provides a simple setup:
 
 ```yaml
 version: '3.8'
@@ -144,140 +110,61 @@ services:
     build: .
     ports:
       - "8080:8080"
-    environment:
-      - DATABASE_HOST=postgres
-      - REDIS_HOST=redis
-    depends_on:
-      - postgres
-      - redis
+    restart: unless-stopped
 ```
 
 ## API Endpoints
 
-### Core Analysis
-- `POST /api/v1/analyze` - Analyze a single URL
-- `POST /api/v1/batch` - Batch analyze multiple URLs
-- `GET /api/v1/analysis` - Get analysis history
+The API provides two simple endpoints:
 
-### Insights & Recommendations
-- `POST /api/v1/insights/generate` - Generate AI insights
-- `GET /api/v1/insights` - Get insights for workspace
-- `PUT /api/v1/insights/{id}/status` - Update insight status
-
-### Metrics & Analytics
-- `GET /api/v1/metrics` - Get aggregated metrics
-- `GET /api/v1/events` - Get tracked events
-- `POST /api/v1/events/track` - Track custom events
-
-### Data Export
-- `POST /api/v1/export` - Export analysis data
-- `GET /api/v1/export/{id}` - Download export file
-
-### System
-- `GET /health` - Health check
-- `GET /metrics` - Prometheus metrics
+- `GET /health` - Health check endpoint
+- `POST /v1/analyze` - Analyze a website for technology detection
 
 ## Development
 
 ### Running Tests
 
 ```bash
-# Unit tests
-make test
+# Run tests
+go test ./...
 
-# Integration tests (requires Docker)
-make test-integration
-
-# Benchmark tests
-make test-benchmarks
-
-# All tests
-make test-all
+# Run tests with coverage
+go test -cover ./...
 ```
 
-### Database Migrations
+### Building
 
 ```bash
-# Run migrations
-make migrate-up
+# Build for current platform
+go build -o webailyzer-api ./cmd/webailyzer-api
 
-# Rollback migrations
-make migrate-down
-
-# Create new migration
-make migrate-create
-```
-
-### Code Quality
-
-```bash
-# Format code
-make fmt
-
-# Lint code
-make lint
-
-# Generate documentation
-make docs
-```
-
-## Monitoring & Observability
-
-### Prometheus Metrics
-
-The API exposes Prometheus metrics at `/metrics`:
-
-- Request duration and count
-- Database connection pool stats
-- Cache hit/miss rates
-- Analysis processing times
-- Error rates by endpoint
-
-### Health Checks
-
-Multiple health check endpoints:
-
-- `/health` - Basic health status
-- `/health/detailed` - Detailed component health
-- `/health/db` - Database connectivity
-- `/health/redis` - Redis connectivity
-
-### Logging
-
-Structured logging with configurable levels:
-
-```bash
-# Set log level
-export LOG_LEVEL=debug
-
-# JSON format for production
-export LOG_FORMAT=json
+# Build for Linux (for Docker)
+CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o webailyzer-api ./cmd/webailyzer-api
 ```
 
 ## Deployment
 
-### Production Deployment
+### Docker Deployment
 
-See [DEPLOYMENT.md](API_DOCUMENTATION.md#deployment-and-configuration-guide) for detailed deployment instructions including:
+```bash
+# Build Docker image
+docker build -t webailyzer-lite-api .
 
-- Docker and Kubernetes configurations
-- Database setup and optimization
-- Load balancing and high availability
-- Security configuration
-- Backup and recovery procedures
+# Run container
+docker run -p 8080:8080 webailyzer-lite-api
+```
 
-### Scaling Considerations
+### Health Checks
 
-- **Horizontal Scaling**: Stateless design allows easy scaling
-- **Database**: Use read replicas and connection pooling
-- **Caching**: Redis cluster for distributed caching
-- **Load Balancing**: Nginx or cloud load balancers
+The API includes a health check endpoint at `/health` that returns:
 
-## Documentation
+```json
+{
+  "status": "ok"
+}
+```
 
-- [API Documentation](API_DOCUMENTATION.md) - Complete API reference
-- [Troubleshooting Guide](TROUBLESHOOTING.md) - Common issues and solutions
-- [Project Structure](PROJECT_STRUCTURE.md) - Codebase organization
+This endpoint is used by Docker health checks and load balancers to verify the service is running.
 
 ## Contributing
 

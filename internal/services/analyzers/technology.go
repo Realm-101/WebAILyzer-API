@@ -102,9 +102,6 @@ func (ta *TechnologyAnalyzer) AnalyzeWithTitle(ctx context.Context, headers http
 	// Convert http.Header to map[string][]string for wappalyzer
 	headerMap := ta.convertHeaders(headers)
 
-	// Reset wappalyzer metrics for this analysis
-	ta.wappalyzer.ResetMetrics()
-
 	// Perform technology detection with title extraction
 	technologies, title := ta.wappalyzer.FingerprintWithTitle(headerMap, body)
 	
@@ -113,9 +110,6 @@ func (ta *TechnologyAnalyzer) AnalyzeWithTitle(ctx context.Context, headers http
 	
 	// Get category information
 	categories := ta.wappalyzer.FingerprintWithCats(headerMap, body)
-	
-	// Get wappalyzer performance metrics
-	wappMetrics := ta.wappalyzer.GetMetrics()
 
 	result := &TechnologyAnalysisResult{
 		Technologies:   technologies,
@@ -124,15 +118,10 @@ func (ta *TechnologyAnalyzer) AnalyzeWithTitle(ctx context.Context, headers http
 		Metadata: TechnologyMetadata{
 			TechnologiesFound: len(technologies),
 			CategoriesFound:   ta.countUniqueCategories(categories),
-			WappalyzerMetrics: WappalyzerMetrics{
-				TotalRequests:     int(wappMetrics.TotalRequests),
-				AverageDuration:   wappMetrics.AverageDuration,
-				TechnologiesFound: int(wappMetrics.TechnologiesFound),
-			},
-			Timestamp:   time.Now(),
-			UserAgent:   userAgent,
-			ContentType: headers.Get("Content-Type"),
-			StatusCode:  statusCode,
+			Timestamp:         time.Now(),
+			UserAgent:         userAgent,
+			ContentType:       headers.Get("Content-Type"),
+			StatusCode:        statusCode,
 		},
 	}
 
@@ -169,12 +158,3 @@ func (ta *TechnologyAnalyzer) countUniqueCategories(categories map[string]wappal
 	return len(uniqueCategories)
 }
 
-// GetMetrics returns the current wappalyzer metrics
-func (ta *TechnologyAnalyzer) GetMetrics() wappalyzer.PerformanceMetrics {
-	return ta.wappalyzer.GetMetrics()
-}
-
-// ResetMetrics resets the wappalyzer metrics
-func (ta *TechnologyAnalyzer) ResetMetrics() {
-	ta.wappalyzer.ResetMetrics()
-}

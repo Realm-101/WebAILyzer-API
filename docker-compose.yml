@@ -1,59 +1,16 @@
 version: '3.8'
 
 services:
-  # PostgreSQL database
-  postgres:
-    image: postgres:15-alpine
-    container_name: webailyzer-postgres
-    environment:
-      POSTGRES_DB: webailyzer
-      POSTGRES_USER: webailyzer
-      POSTGRES_PASSWORD: webailyzer_password
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./migrations:/docker-entrypoint-initdb.d
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U webailyzer -d webailyzer"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # Redis cache
-  redis:
-    image: redis:7-alpine
-    container_name: webailyzer-redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # WebAIlyzer API (for production)
+  # WebAIlyzer Lite API (stateless, no external dependencies)
   api:
     build: .
-    container_name: webailyzer-api
+    container_name: webailyzer-lite-api
     ports:
       - "8080:8080"
-    environment:
-      WEBAILYZER_DATABASE_HOST: postgres
-      WEBAILYZER_DATABASE_USER: webailyzer
-      WEBAILYZER_DATABASE_PASSWORD: webailyzer_password
-      WEBAILYZER_DATABASE_DATABASE: webailyzer
-      WEBAILYZER_REDIS_HOST: redis
-      WEBAILYZER_LOGGING_LEVEL: debug
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     restart: unless-stopped
-
-volumes:
-  postgres_data:
-  redis_data:
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 3s
+      start_period: 5s
+      retries: 3
