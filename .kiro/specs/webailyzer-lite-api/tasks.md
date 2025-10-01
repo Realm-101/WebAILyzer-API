@@ -131,13 +131,20 @@
 
 
 
+
+
   - Write end-to-end tests for both endpoints
   - Test with various website types and edge cases
   - Add error scenario testing (invalid URLs, timeouts)
   - Create Docker container testing
   - _Requirements: 1.5, 2.4, 3.3, 4.5_
 
-- [ ] 10. Add deployment documentation
+- [x] 10. Add deployment documentation
+
+
+
+
+
   - Create simple deployment guide for Docker
   - Add local development setup instructions
   - Document environment variables and configuration

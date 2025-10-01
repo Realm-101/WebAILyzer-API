@@ -12,7 +12,21 @@ A minimal, lightweight web technology detection API built with Go. Provides simp
 
 ## Quick Start
 
-### Using Docker (Recommended)
+### One-Command Deployment (Recommended)
+
+**Linux/Mac:**
+```bash
+git clone https://github.com/your-username/webailyzer-lite-api.git
+cd webailyzer-lite-api && ./deploy.sh
+```
+
+**Windows:**
+```cmd
+git clone https://github.com/your-username/webailyzer-lite-api.git
+cd webailyzer-lite-api && deploy.bat
+```
+
+### Using Docker Compose
 
 ```bash
 # Clone the repository
@@ -25,6 +39,8 @@ docker-compose up -d
 # The API will be available at http://localhost:8080
 curl http://localhost:8080/health
 ```
+
+📋 **See [QUICK_START.md](QUICK_START.md) for the fastest deployment method**
 
 ### Building from Source
 
@@ -144,7 +160,9 @@ CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o webailyzer-api ./cmd/
 
 ## Deployment
 
-### Docker Deployment
+For detailed deployment instructions, environment configuration, and troubleshooting, see [DEPLOYMENT.md](DEPLOYMENT.md).
+
+### Quick Docker Deployment
 
 ```bash
 # Build Docker image

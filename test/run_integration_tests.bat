@@ -16,15 +16,15 @@ set NC=[0m
 
 REM Function to print status
 :print_status
-echo %GREEN%[INFO]%NC% %~1
+echo [INFO] %~1
 goto :eof
 
 :print_error
-echo %RED%[ERROR]%NC% %~1
+echo [ERROR] %~1
 goto :eof
 
 :print_warning
-echo %YELLOW%[WARN]%NC% %~1
+echo [WARN] %~1
 goto :eof
 
 REM Function to check if Go is available
@@ -195,50 +195,77 @@ REM Main script logic
 set COMMAND=%1
 if "%COMMAND%"=="" set COMMAND=help
 
-if "%COMMAND%"=="build" (
-    call :check_go
-    if errorlevel 1 exit /b 1
-    call :build_app
-) else if "%COMMAND%"=="basic" (
-    call :check_go
-    if errorlevel 1 exit /b 1
-    call :build_app
-    if errorlevel 1 exit /b 1
-    call :run_basic_integration_tests
-) else if "%COMMAND%"=="integration" (
-    call :check_go
-    if errorlevel 1 exit /b 1
-    call :check_docker
-    call :build_app
-    if errorlevel 1 exit /b 1
-    call :run_integration_tests
-) else if "%COMMAND%"=="docker" (
-    call :check_go
-    if errorlevel 1 exit /b 1
-    call :check_docker
-    if errorlevel 1 exit /b 1
-    call :build_app
-    if errorlevel 1 exit /b 1
-    call :run_docker_tests
-) else if "%COMMAND%"=="benchmarks" (
-    call :check_go
-    if errorlevel 1 exit /b 1
-    call :build_app
-    if errorlevel 1 exit /b 1
-    call :run_benchmark_tests
-) else if "%COMMAND%"=="coverage" (
-    call :check_go
-    if errorlevel 1 exit /b 1
-    call :generate_coverage
-) else if "%COMMAND%"=="all" (
-    call :check_go
-    if errorlevel 1 exit /b 1
-    call :check_docker
-    call :run_all_tests
-) else if "%COMMAND%"=="cleanup" (
-    call :cleanup_build
-) else (
-    call :show_usage
-)
+if "%COMMAND%"=="build" goto cmd_build
+if "%COMMAND%"=="basic" goto cmd_basic
+if "%COMMAND%"=="integration" goto cmd_integration
+if "%COMMAND%"=="docker" goto cmd_docker
+if "%COMMAND%"=="benchmarks" goto cmd_benchmarks
+if "%COMMAND%"=="coverage" goto cmd_coverage
+if "%COMMAND%"=="all" goto cmd_all
+if "%COMMAND%"=="cleanup" goto cmd_cleanup
+if "%COMMAND%"=="help" goto cmd_help
+goto cmd_help
+
+:cmd_build
+call :check_go
+if errorlevel 1 exit /b 1
+call :build_app
+goto :eof
+
+:cmd_basic
+call :check_go
+if errorlevel 1 exit /b 1
+call :build_app
+if errorlevel 1 exit /b 1
+call :run_basic_integration_tests
+goto :eof
+
+:cmd_integration
+call :check_go
+if errorlevel 1 exit /b 1
+call :check_docker
+call :build_app
+if errorlevel 1 exit /b 1
+call :run_integration_tests
+goto :eof
+
+:cmd_docker
+call :check_go
+if errorlevel 1 exit /b 1
+call :check_docker
+if errorlevel 1 exit /b 1
+call :build_app
+if errorlevel 1 exit /b 1
+call :run_docker_tests
+goto :eof
+
+:cmd_benchmarks
+call :check_go
+if errorlevel 1 exit /b 1
+call :build_app
+if errorlevel 1 exit /b 1
+call :run_benchmark_tests
+goto :eof
+
+:cmd_coverage
+call :check_go
+if errorlevel 1 exit /b 1
+call :generate_coverage
+goto :eof
+
+:cmd_all
+call :check_go
+if errorlevel 1 exit /b 1
+call :check_docker
+call :run_all_tests
+goto :eof
+
+:cmd_cleanup
+call :cleanup_build
+goto :eof
+
+:cmd_help
+call :show_usage
+exit /b 0
 
 endlocal
