@@ -8,10 +8,10 @@ A minimal, lightweight web technology detection API built with Go. Provides simp
 
 - **Technology Detection**: Identify web technologies, frameworks, and libraries used by websites
 - **Simple HTTP API**: Two endpoints - health check and website analysis
+- **API Key Authentication**: Secure access with mandatory API keys to prevent abuse
 - **Docker Support**: Easy deployment with Docker and Docker Compose
 - **Lightweight**: Minimal dependencies and resource usage (runs in <256MB RAM)
 - **Fast Response**: Quick analysis with appropriate timeouts
-- **Zero Configuration**: No setup required - just build and run
 - **Production Ready**: Includes health checks, logging, and error handling
 
 ## Quick Start
@@ -55,17 +55,18 @@ go mod download
 # Build the application
 go build -o webailyzer-api ./cmd/webailyzer-api
 
-# Run the application
+# Run the application (set API_KEYS for production)
+export API_KEYS="your-secret-api-key"
 ./webailyzer-api
 ```
 
 ## API Usage
 
-The API provides two simple endpoints with no authentication required:
+Access to the analysis endpoint is protected by API keys. You must provide a valid key in the `Authorization` header. The health check endpoint does not require authentication.
 
 ### Health Check
 
-Check if the API is running:
+Check if the API is running (no authentication required):
 
 ```bash
 curl http://localhost:8080/health
@@ -80,11 +81,12 @@ Response:
 
 ### Website Analysis
 
-Analyze a website to detect technologies:
+Analyze a website to detect technologies. Requires a valid API key.
 
 ```bash
 curl -X POST http://localhost:8080/v1/analyze \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
   -d '{
     "url": "https://example.com"
   }'
@@ -117,11 +119,21 @@ Response:
 
 ## Configuration
 
-No configuration is required. The API runs on port 8080 by default.
+The API is configured via environment variables.
+
+### Environment Variables
+- `PORT`: The port the server listens on. Defaults to `8080`.
+- `API_KEYS`: A comma-separated list of valid API keys for authentication. **Required for production.**
+
+Example:
+```
+PORT=8080
+API_KEYS=key1_secret,key2_secret
+```
 
 ### Docker Compose Configuration
 
-The included `docker-compose.yml` provides a simple setup:
+Update the `docker-compose.yml` to include your API keys using an environment file or directly.
 
 ```yaml
 version: '3.8'
@@ -130,15 +142,15 @@ services:
     build: .
     ports:
       - "8080:8080"
+    environment:
+      - API_KEYS=your-secret-key-here
     restart: unless-stopped
 ```
 
 ## API Endpoints
 
-The API provides two simple endpoints:
-
-- `GET /health` - Health check endpoint
-- `POST /v1/analyze` - Analyze a website for technology detection
+- `GET /health` - Health check endpoint (unauthenticated)
+- `POST /v1/analyze` - Analyze a website for technology detection (requires authentication)
 
 ## Development
 
@@ -172,8 +184,8 @@ For detailed deployment instructions, environment configuration, and troubleshoo
 # Build Docker image
 docker build -t webailyzer-lite-api .
 
-# Run container
-docker run -p 8080:8080 webailyzer-lite-api
+# Run container with API key
+docker run -p 8080:8080 -e API_KEYS="your-secret-key" webailyzer-lite-api
 ```
 
 ### Health Checks
